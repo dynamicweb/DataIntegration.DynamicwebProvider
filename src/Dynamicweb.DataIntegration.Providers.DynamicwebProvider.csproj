@@ -7,7 +7,7 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageProjectUrl>https://doc.dynamicweb.com/</PackageProjectUrl>
-		<PackageTags>Dynamicweb</PackageTags>
+		<PackageTags>Dynamicweb dw10 addin dataintegration providers</PackageTags>
 		<Product>Dynamicweb CMS</Product>
 		<Company>Dynamicweb Software A/S</Company>
 		<Authors>Dynamicweb Software A/S</Authors>
