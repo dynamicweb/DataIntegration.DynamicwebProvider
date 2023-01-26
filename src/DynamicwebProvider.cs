@@ -709,11 +709,21 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                     foreach (RepositoryItem repoItem in repoService.GetRepositoryItems(repoName).Where(ri => ri.TypeName == "Index"))
                     {
                         var indexingService = ServiceLocator.Current.GetInstance<IIndexService>();
-                        var index = indexingService.LoadIndex(repoName, repoItem.Name);
-                        foreach (var build in index.Builds)
+                        IIndex index;
+                        try
                         {
-
-                            ret.Add(string.Concat(repoName, "-", repoItem.Name, "-", build.Key), string.Concat(repoName, "-", repoItem.Name.Substring(0, repoItem.Name.LastIndexOf(".")), "-", build.Key));
+                            index = indexingService.LoadIndex(repoName, repoItem.Name);
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                        if (index != null && index.Builds != null)
+                        {
+                            foreach (var build in index.Builds)
+                            {
+                                ret.Add(string.Concat(repoName, "-", repoItem.Name, "-", build.Key), string.Concat(repoName, "-", repoItem.Name.Substring(0, repoItem.Name.LastIndexOf(".")), "-", build.Key));
+                            }
                         }
                     }
                 }
