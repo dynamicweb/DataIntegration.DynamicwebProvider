@@ -1,6 +1,7 @@
 ﻿using Dynamicweb.Core;
 using Dynamicweb.Data;
 using Dynamicweb.DataIntegration.Integration;
+using Dynamicweb.DataIntegration.ProviderHelpers;
 using Dynamicweb.Ecommerce.Assortments;
 using Dynamicweb.Extensibility.Notifications;
 using Dynamicweb.Logging;
@@ -11,7 +12,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
-namespace Dynamicweb.DataIntegration.ProviderHelpers
+namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
 {
     public class AssortmentHandler
     {
