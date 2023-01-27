@@ -1,6 +1,6 @@
 ﻿using Dynamicweb.Ecommerce.Assortments;
 
-namespace Dynamicweb.DataIntegration.ProviderHelpers
+namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
 {
     public class AssortmentInfo
     {
