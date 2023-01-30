@@ -113,7 +113,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             }
         }
 
-        internal void RebuildAssortments()
+        public void RebuildAssortments()
         {
             var assortmentsForBuild = new List<Assortment>();
             var failedAssortments = new List<Assortment>();
