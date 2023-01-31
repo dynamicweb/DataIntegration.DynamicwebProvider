@@ -111,12 +111,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             set { Catalog = value; }
         }
 
-        internal override SqlConnection Connection
-        {
-            get { return connection ?? (connection = (SqlConnection)Database.CreateConnection()); }
-            set { connection = value; }
-        }
-
         protected string defaultLanguage = null;
         [AddInParameter("Default Language"), AddInParameterEditor(typeof(DropDownParameterEditor), "NewGUI=true;"), AddInParameterGroup("Destination"), AddInParameterOrder(10)]
         public string DefaultLanguage
@@ -125,9 +119,9 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             {
                 if (defaultLanguage == null)
                 {
-                    SqlCommand sqlCommand = new SqlCommand("select top(1) ecomlanguages.LanguageID from ecomlanguages where ecomlanguages.languageisdefault=1", Connection);
-                    if (Connection.State == ConnectionState.Closed)
-                        Connection.Open();
+                    SqlCommand sqlCommand = new SqlCommand("select top(1) ecomlanguages.LanguageID from ecomlanguages where ecomlanguages.languageisdefault=1", this.connection);
+                    if (connection.State == ConnectionState.Closed)
+						connection.Open();
                     var result = sqlCommand.ExecuteReader();
                     if (result.Read())
                         defaultLanguage = (string)result["LanguageID"];
@@ -227,7 +221,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                         if (node.HasChildNodes)
                         {
                             SqlConnectionString = node.FirstChild.Value;
-                            Connection = new SqlConnection(SqlConnectionString);
+                            this.connection = new SqlConnection(SqlConnectionString);
                         }
                         break;
                     case "Schema":
@@ -391,7 +385,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         {
             if (IsFirstJobRun)
             {
-                OrderTablesByConstraints(job, Connection);
+                OrderTablesByConstraints(job, this.connection);
             }
             SqlTransaction sqlTransaction = null;
             Dictionary<string, object> sourceRow = null;
@@ -401,8 +395,8 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             try
             {
                 ReplaceMappingConditionalsWithValuesFromRequest(job);
-                if (Connection.State != ConnectionState.Open)
-                    Connection.Open();
+                if (connection.State != ConnectionState.Open)
+					connection.Open();
 
                 foreach (Mapping mapping in job.Mappings)
                 {
@@ -421,7 +415,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                                 optionValue = mapping.GetOptionValue("DeactivateMissingProducts");
                                 bool deactivateMissingProducts = optionValue.HasValue ? optionValue.Value : DeactivateMissingProducts;
 
-                                writer = new DynamicwebBulkInsertDestinationWriter(mapping, Connection, deactivateMissingProducts, removeMissingAfterImport, Logger, AssortmentHandler, discardDuplicates, RemoveMissingAfterImportDestinationTablesOnly, SkipFailingRows);
+                                writer = new DynamicwebBulkInsertDestinationWriter(mapping, this.connection, deactivateMissingProducts, removeMissingAfterImport, Logger, AssortmentHandler, discardDuplicates, RemoveMissingAfterImportDestinationTablesOnly, SkipFailingRows);
                                 Writers.Add(writer);
                             }
                             else
@@ -440,7 +434,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                                 writer.Write(sourceRow);
                             }
                             writer.FinishWriting();
-                            writer.TableToWrite.Clear();
                         }
                         Logger.Log("Finished import to temporary table for " + mapping.DestinationTable.Name + ".");
                     }
@@ -449,7 +442,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                 sourceRow = null;
                 if (isReadFromSourceFinished)
                 {
-                    sqlTransaction = Connection.BeginTransaction();
+                    sqlTransaction = this.connection.BeginTransaction();
 
                     bool deactivateMissingProducts = DeactivateMissingProducts;
                     var productsWriter = Writers.Where(w => w.Mapping != null && w.Mapping.Active && w.Mapping.DestinationTable != null &&
@@ -570,7 +563,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                         writer.Close();
                     }
                     job.Source.Close();
-                    Connection.Dispose();
+					connection.Dispose();
                 }
                 sourceRow = null;
             }
@@ -622,9 +615,9 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             var options = new Hashtable();
             if (name == "Shop")
             {
-                SqlCommand sqlCommand = new SqlCommand { Connection = Connection };
-                if (Connection.State == ConnectionState.Closed)
-                    Connection.Open();
+                SqlCommand sqlCommand = new SqlCommand { Connection = this.connection };
+                if (this.connection.State == ConnectionState.Closed)
+                    this.connection.Open();
                 SqlDataAdapter languagesDataAdapter = new SqlDataAdapter("select ShopID, ShopName from EcomShops", sqlCommand.Connection);
                 new SqlCommandBuilder(languagesDataAdapter);
                 DataSet dataSet = new DataSet();
@@ -645,9 +638,9 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             }
             else if (name == "Default Language")
             {
-                SqlCommand sqlLanguageCommand = new SqlCommand { Connection = Connection };
-                if (Connection.State == ConnectionState.Closed)
-                    Connection.Open();
+                SqlCommand sqlLanguageCommand = new SqlCommand { Connection = this.connection };
+                if (this.connection.State == ConnectionState.Closed)
+                    this.connection.Open();
 
                 SqlDataAdapter languagesDataAdapter = new SqlDataAdapter("select LanguageID, LanguageCode2, LanguageName from EcomLanguages", sqlLanguageCommand.Connection);
                 new SqlCommandBuilder(languagesDataAdapter);
