@@ -109,9 +109,9 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         {
             get { return Catalog; }
             set { Catalog = value; }
-        }
+        }        
 
-        internal override SqlConnection Connection
+        protected override SqlConnection Connection
         {
             get { return connection ?? (connection = (SqlConnection)Database.CreateConnection()); }
             set { connection = value; }

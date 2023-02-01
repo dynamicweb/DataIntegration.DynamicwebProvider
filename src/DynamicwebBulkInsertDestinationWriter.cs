@@ -107,14 +107,14 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         /// <param name="Row">The row to be written.</param>
         public override void Write(Dictionary<string, object> row)
         {
-            if (!mapping.Conditionals.CheckConditionals(row))
+            if (!Mapping.Conditionals.CheckConditionals(row))
             {
                 return;
             }
 
             DataRow dataRow = TableToWrite.NewRow();
-            var columnMappings = mapping.GetColumnMappings();
-            switch (mapping.DestinationTable.Name)
+            var columnMappings = Mapping.GetColumnMappings();
+            switch (Mapping.DestinationTable.Name)
             {
                 case "EcomAssortmentPermissions":
                     if (columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "AssortmentPermissionAssortmentID", true) == 0) != null &&
@@ -166,7 +166,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             var activeColumnMappings = columnMappings.Where(cm => cm.Active);
             foreach (ColumnMapping columnMapping in activeColumnMappings)
             {
-                if (columnMapping.HasScriptWithValue() || row.ContainsKey(columnMapping.SourceColumn.Name))
+                if (columnMapping.HasScriptWithValue || row.ContainsKey(columnMapping.SourceColumn.Name))
                 {
                     switch (columnMapping.ScriptType)
                     {
@@ -181,19 +181,20 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                             break;
                         case ScriptType.Constant:                        
                             dataRow[columnMapping.DestinationColumn.Name] = columnMapping.GetScriptValue();
-                            break;                        
-                    }
-                    if (columnMapping.HasNewGuidScript())
-                        dataRow[columnMapping.DestinationColumn.Name] = columnMapping.GetScriptValue();
+                            break;
+                        case ScriptType.NewGuid:
+                            dataRow[columnMapping.DestinationColumn.Name] = columnMapping.GetScriptValue();
+                            break;
+                    }                    
                 }
                 else
                 {
                     logger.Info(BaseDestinationWriter.GetRowValueNotFoundMessage(row, columnMapping.SourceColumn.Table.Name, columnMapping.SourceColumn.Name));
                 }
             }
-            if (!discardDuplicates || !duplicateRowsHandler.IsRowDuplicate(activeColumnMappings, mapping, dataRow, row))
+            if (!discardDuplicates || !duplicateRowsHandler.IsRowDuplicate(activeColumnMappings, Mapping, dataRow, row))
             {
-                if (mapping.DestinationTable.Name == "EcomGroupProductRelation")
+                if (Mapping.DestinationTable.Name == "EcomGroupProductRelation")
                 {
                     var groupIDColumn = columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "GroupProductRelationGroupID", true) == 0).SourceColumn.Name;
                     var productIdColumn = columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "GroupProductRelationProductID", true) == 0).SourceColumn.Name;
@@ -211,7 +212,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
 
                 if (assortmentHandler != null)
                 {
-                    assortmentHandler.ProcessAssortments(dataRow, mapping);
+                    assortmentHandler.ProcessAssortments(dataRow, Mapping);
                 }
 
                 // if 10k write table to db, empty table
@@ -233,18 +234,18 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         internal void DeleteExcessFromMainTable(string shop, SqlTransaction transaction, bool deleteProductsAndGroupForSpecificLanguage, string languageId, bool hideDeactivatedProducts)
         {
             SqlCommand.Transaction = transaction;
-            if ((mapping.DestinationTable.Name == "EcomProducts" || mapping.DestinationTable.Name == "EcomGroups") && deleteProductsAndGroupForSpecificLanguage)
+            if ((Mapping.DestinationTable.Name == "EcomProducts" || Mapping.DestinationTable.Name == "EcomGroups") && deleteProductsAndGroupForSpecificLanguage)
             {
-                string extraConditions = GetDeleteFromSpecificLanguageExtraCondition(mapping, tempTablePrefix, languageId);
-                DeleteExcessFromMainTable(mapping, extraConditions, SqlCommand, tempTablePrefix);
+                string extraConditions = GetDeleteFromSpecificLanguageExtraCondition(Mapping, tempTablePrefix, languageId);
+                DeleteExcessFromMainTable(Mapping, extraConditions, SqlCommand, tempTablePrefix);
             }
-            else if (mapping.DestinationTable.Name == "EcomProducts" && deactivateMissingProducts)
+            else if (Mapping.DestinationTable.Name == "EcomProducts" && deactivateMissingProducts)
             {
-                DeactivateMissingProductsInMainTable(mapping, SqlCommand, shop, null, hideDeactivatedProducts);
+                DeactivateMissingProductsInMainTable(Mapping, SqlCommand, shop, null, hideDeactivatedProducts);
             }
-            else if ((removeMissingAfterImport || removeMissingAfterImportDestinationTablesOnly) && mapping.DestinationTable.Name != "AccessUser")
+            else if ((removeMissingAfterImport || removeMissingAfterImportDestinationTablesOnly) && Mapping.DestinationTable.Name != "AccessUser")
             {
-                string extraConditions = GetExtraConditions(mapping, shop, null);
+                string extraConditions = GetExtraConditions(Mapping, shop, null);
                 DeleteExcessFromMainTable(extraConditions);
             }            
         }
@@ -252,8 +253,8 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         internal void DeleteExistingFromMainTable(string shop, SqlTransaction transaction)
         {                                    
             SqlCommand.Transaction = transaction;
-            string extraConditions = GetExtraConditions(mapping, shop, null);
-            DeleteExistingFromMainTable(mapping, extraConditions, SqlCommand, tempTablePrefix);            
+            string extraConditions = GetExtraConditions(Mapping, shop, null);
+            DeleteExistingFromMainTable(Mapping, extraConditions, SqlCommand, tempTablePrefix);            
         }
 
         /// <summary>
