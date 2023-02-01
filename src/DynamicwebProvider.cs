@@ -109,9 +109,9 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         {
             get { return Catalog; }
             set { Catalog = value; }
-        }
+        }        
 
-        internal override SqlConnection Connection
+        protected override SqlConnection Connection
         {
             get { return connection ?? (connection = (SqlConnection)Database.CreateConnection()); }
             set { connection = value; }
@@ -440,7 +440,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                                 writer.Write(sourceRow);
                             }
                             writer.FinishWriting();
-                            writer.TableToWrite.Clear();
+                            writer.ClearTableToWrite();
                         }
                         Logger.Log("Finished import to temporary table for " + mapping.DestinationTable.Name + ".");
                     }
