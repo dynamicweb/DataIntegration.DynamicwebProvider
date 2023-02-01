@@ -458,5 +458,10 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                 columnMapping.RemoveAll(cm => cm.DestinationColumn != null && cm.DestinationColumn.Name == "AssortmentPermissionExternalID");
             }
         }
+
+        internal void ClearTableToWrite()
+        {
+            TableToWrite.Clear();
+        }
     }
 }

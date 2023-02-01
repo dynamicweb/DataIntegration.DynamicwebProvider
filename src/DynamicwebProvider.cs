@@ -440,7 +440,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                                 writer.Write(sourceRow);
                             }
                             writer.FinishWriting();
-                            writer.TableToWrite.Clear();
+                            writer.ClearTableToWrite();
                         }
                         Logger.Log("Finished import to temporary table for " + mapping.DestinationTable.Name + ".");
                     }
