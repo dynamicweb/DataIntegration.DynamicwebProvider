@@ -109,7 +109,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         {
             get { return Catalog; }
             set { Catalog = value; }
-        }        
+        }
 
         protected override SqlConnection Connection
         {
@@ -345,13 +345,21 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             }
 
             //Set key for other tables that are missing keys in the database
-            result.GetTables().Find(t => t.Name == "Ecom7Tree").Columns.Find(c => c.Name == "id").IsPrimaryKey = true;
+            var table = result.GetTables().FirstOrDefault(t => t.Name == "Ecom7Tree");
+            if (table != null)
+            {
+                table.Columns.Find(c => c.Name == "id").IsPrimaryKey = true;
+            }
             if (result.GetTables().Exists(t => t.Name.Contains("Ipaper")))
             {
                 UpdateIPaperTables(result);
             }
-            result.GetTables().Find(t => t.Name == "Statv2SessionBot").Columns.Find(c => c.Name == "Statv2SessionID").IsPrimaryKey = true;
-            result.GetTables().Find(t => t.Name == "Statv2UserAgents").Columns.Find(c => c.Name == "Statv2UserAgentsID").IsPrimaryKey = true;
+            table = result.GetTables().Find(t => t.Name == "Statv2SessionBot");
+            if (table != null)
+                table.Columns.Find(c => c.Name == "Statv2SessionID").IsPrimaryKey = true;
+            table = result.GetTables().Find(t => t.Name == "Statv2UserAgents");
+            if (table != null)
+                table.Columns.Find(c => c.Name == "Statv2UserAgentsID").IsPrimaryKey = true;
 
             //For EcomProducts Remove ProductAutoID column from schema
             Table ecomProductsTable = result.GetTables().Find(t => t.Name == "EcomProducts");
