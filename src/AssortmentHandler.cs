@@ -57,7 +57,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                             dataRow.Table.Columns.Contains("AssortmentID") && dataRow["AssortmentID"] != DBNull.Value && !string.IsNullOrEmpty(dataRow["AssortmentID"] as string))
                         {
                             assortmentID = (string)dataRow["AssortmentID"];
-                            if(dataRow.Table.Columns.Contains("AssortmentLanguageID") && dataRow["AssortmentLanguageID"] != DBNull.Value && !string.IsNullOrEmpty(dataRow["AssortmentLanguageID"] as string))
+                            if (dataRow.Table.Columns.Contains("AssortmentLanguageID") && dataRow["AssortmentLanguageID"] != DBNull.Value && !string.IsNullOrEmpty(dataRow["AssortmentLanguageID"] as string))
                             {
                                 assortmentLanguageId = (string)dataRow["AssortmentLanguageID"];
                             }
