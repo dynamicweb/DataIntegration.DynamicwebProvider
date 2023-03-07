@@ -442,7 +442,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                     {
                         //Source columns are irrelevant, but must be set, so they are set to a random column
                         Column randomColumn = job.Source.GetSchema().GetTables().Where(table => table.Columns.Count > 0).First().Columns.First();
-                        mapping.AddMapping(randomColumn, job.Destination.GetSchema().GetTables().Find(t => t.Name == "EcomAssortmentPermissions").Columns.Find(c => string.Compare(c.Name, "AssortmentPermissionAccessUserID", true) == 0), false);
+                        mapping.AddMapping(randomColumn, job.Destination.GetSchema().GetTables().Find(t => t.Name == "EcomAssortmentPermissions").Columns.Find(c => string.Compare(c.Name, "AssortmentPermissionAccessUserID", true) == 0), true);
                     }
                 }
             }
