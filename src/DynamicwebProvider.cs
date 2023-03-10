@@ -103,8 +103,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         [AddInParameter("Persist successful rows and skip failing rows"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(100)]
         public override bool SkipFailingRows { get; set; }
 
-        [AddInParameter("Use database views"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Source")]
-        public override bool UseDatabaseViews { get; set; }
         /// <summary>
         /// This property is used to remove rows from the EcomGroupProductRelationsTable, but only for the products that are being imported.
         /// It can be set in the job settings xml file in the config section
@@ -133,7 +131,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             xmlTextWriter.WriteElementString("HideDeactivatedProducts", HideDeactivatedProducts.ToString(CultureInfo.CurrentCulture));
             xmlTextWriter.WriteElementString(nameof(DisableCacheClearing), DisableCacheClearing.ToString(CultureInfo.CurrentCulture));
             xmlTextWriter.WriteElementString("SkipFailingRows", SkipFailingRows.ToString(CultureInfo.CurrentCulture));
-            xmlTextWriter.WriteElementString("UseDatabaseViews", UseDatabaseViews.ToString(CultureInfo.CurrentCulture));
             GetSchema().SaveAsXml(xmlTextWriter);
         }
 
@@ -216,12 +213,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                     case "SkipFailingRows":
                         if (node.HasChildNodes)
                             SkipFailingRows = node.FirstChild.Value == "True";
-                        break;
-                    case "UseDatabaseViews":
-                        if (node.HasChildNodes)
-                        {
-                            UseDatabaseViews = node.FirstChild.Value == "True";
-                        }
                         break;
                 }
             }
@@ -622,7 +613,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             root.Add(CreateParameterNode(GetType(), "Hide deactivated products", HideDeactivatedProducts.ToString()));
             root.Add(CreateParameterNode(GetType(), "Disable cache clearing", DisableCacheClearing.ToString()));
             root.Add(CreateParameterNode(GetType(), "Persist successful rows and skip failing rows", SkipFailingRows.ToString()));
-            root.Add(CreateParameterNode(GetType(), "Use database views", UseDatabaseViews.ToString()));
             return document.ToString();
         }
 
