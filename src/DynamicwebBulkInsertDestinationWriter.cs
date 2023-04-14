@@ -295,7 +295,17 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                 {
                     sqlClean.Append(", ProductHidden = 1");
                 }
-                sqlClean.Append(" where not exists  (select * from [" + mapping.DestinationTable.SqlSchema + "].[" + mapping.DestinationTable.Name +
+                sqlClean.Append(" where ");
+                string extraConditions = GetExtraConditions(mapping, shop, languageId);
+                if (extraConditions.Length > 0)
+                {
+                    if (extraConditions.StartsWith("and "))
+                        extraConditions = extraConditions.Substring("and ".Length - 1);
+                    sqlClean.Append(extraConditions);
+                    sqlClean.Append(" and ");
+                }
+
+                sqlClean.Append(" not exists  (select * from [" + mapping.DestinationTable.SqlSchema + "].[" + mapping.DestinationTable.Name +
                                       $"TempTableForBulkImport{mapping.GetId()}] where ");
 
                 var columnMappings = mapping.GetColumnMappings();
@@ -315,11 +325,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                 }
                 sqlClean.Remove(sqlClean.Length - 4, 4);
                 sqlClean.Append(")");
-                string extraConditions = GetExtraConditions(mapping, shop, languageId);
-                if (extraConditions.Length > 0)
-                    if (extraConditions.Length > 0)
-                        sqlClean.Append(extraConditions);
-
 
                 sqlCommand.CommandText = sqlClean.ToString();
                 sqlCommand.ExecuteNonQuery();
