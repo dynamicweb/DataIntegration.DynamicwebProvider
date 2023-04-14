@@ -38,78 +38,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             SqlConnectionString = connectionString;
             connection = new SqlConnection(SqlConnectionString);
         }
-        [AddInParameter("Source server"), AddInParameterEditor(typeof(TextParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override string SourceServer
-        {
-            get { return Server; }
-            set { Server = value; }
-        }
-        [AddInParameter("Destination server"), AddInParameterEditor(typeof(TextParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override string DestinationServer
-        {
-            get { return Server; }
-            set { Server = value; }
-        }
-        [AddInParameter("Use integrated security to connect to source server"), AddInParameterEditor(typeof(Extensibility.Editors.YesNoParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override bool SourceServerSSPI
-        {
-            get;
-            set;
-        }
-        [AddInParameter("Use integrated security to connect to destination server"), AddInParameterEditor(typeof(Extensibility.Editors.YesNoParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override bool DestinationServerSSPI
-        {
-            get;
-            set;
-        }
-        [AddInParameter("Sql source server username"), AddInParameterEditor(typeof(TextParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override string SourceUsername
-        {
-            get { return Username; }
-            set { Username = value; }
-        }
-        [AddInParameter("Sql destination server username"), AddInParameterEditor(typeof(TextParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override string DestinationUsername
-        {
-            get { return Username; }
-            set { Username = value; }
-        }
-        [AddInParameter("Sql source server password"), AddInParameterEditor(typeof(TextParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override string SourcePassword
-        {
-            get { return Password; }
-            set { Password = value; }
-        }
-        [AddInParameter("Sql destination server password"), AddInParameterEditor(typeof(TextParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override string DestinationPassword
-        {
-            get { return Password; }
-            set { Password = value; }
-        }
-        [AddInParameter("Sql source database"), AddInParameterEditor(typeof(TextParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override string SourceDatabase
-        {
-            get { return Catalog; }
-            set { Catalog = value; }
-        }
-        [AddInParameter("Sql source connection string"), AddInParameterEditor(typeof(TextParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override string SourceConnectionString
-        {
-            get { return ManualConnectionString; }
-            set { ManualConnectionString = value; }
-        }
-        [AddInParameter("Sql destination connection string"), AddInParameterEditor(typeof(TextParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override string DestinationConnectionString
-        {
-            get { return ManualConnectionString; }
-            set { ManualConnectionString = value; }
-        }
-        [AddInParameter("Sql destination server password"), AddInParameterEditor(typeof(TextParameterEditor), "htmlClass=connectionStringInput;"), AddInParameterGroup("hidden")]
-        public override string DestinationDatabase
-        {
-            get { return Catalog; }
-            set { Catalog = value; }
-        }
 
         protected override SqlConnection Connection
         {
@@ -118,7 +46,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         }
 
         protected string defaultLanguage = null;
-        [AddInParameter("Default Language"), AddInParameterEditor(typeof(DropDownParameterEditor), "NewGUI=true;"), AddInParameterGroup("Destination"), AddInParameterOrder(10)]
+        [AddInParameter("Default Language"), AddInParameterEditor(typeof(DropDownParameterEditor), "none=true;"), AddInParameterGroup("Destination"), AddInParameterOrder(10)]
         public string DefaultLanguage
         {
             get
@@ -141,7 +69,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             }
         }
 
-        [AddInParameter("Shop"), AddInParameterEditor(typeof(DropDownParameterEditor), "NewGUI=true;"), AddInParameterGroup("Destination"), AddInParameterOrder(20)]
+        [AddInParameter("Shop"), AddInParameterEditor(typeof(DropDownParameterEditor), "none=true;"), AddInParameterGroup("Destination"), AddInParameterOrder(20)]
         public string Shop { get; set; }
 
 
@@ -154,13 +82,13 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         [AddInParameter("Deactivate missing products"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(30)]
         public bool DeactivateMissingProducts { get; set; }
 
-        [AddInParameter("Remove missing rows after import"), AddInParameterEditor(typeof(Extensibility.Editors.YesNoParameterEditor), "IconPath=/Admin/Images/Ribbon/Icons/Small/Warning.png;Tooltip=Removes rows from the destination and relation tables. This option takes precedence"), AddInParameterGroup("Destination"), AddInParameterOrder(40)]
+        [AddInParameter("Remove missing rows after import"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Removes rows from the destination and relation tables. This option takes precedence"), AddInParameterGroup("Destination"), AddInParameterOrder(40)]
         public override bool RemoveMissingAfterImport { get; set; }
 
-        [AddInParameter("Delete incoming rows"), AddInParameterEditor(typeof(Extensibility.Editors.YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(50)]
+        [AddInParameter("Delete incoming rows"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(50)]
         public bool DeleteIncomingItems { get; set; }
 
-        [AddInParameter("Delete products/groups for languages included in input"), AddInParameterEditor(typeof(Extensibility.Editors.YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(60)]
+        [AddInParameter("Delete products/groups for languages included in input"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(60)]
         public bool DeleteProductsAndGroupForSpecificLanguage { get; set; }
 
         [AddInParameter("Discard duplicates"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(70)]
@@ -175,8 +103,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         [AddInParameter("Persist successful rows and skip failing rows"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(100)]
         public override bool SkipFailingRows { get; set; }
 
-        [AddInParameter("Use database views"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Source")]
-        public override bool UseDatabaseViews { get; set; }
         /// <summary>
         /// This property is used to remove rows from the EcomGroupProductRelationsTable, but only for the products that are being imported.
         /// It can be set in the job settings xml file in the config section
@@ -185,7 +111,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
 
         public string UserKeyField { get; set; }
 
-        [AddInParameter("Repositories index update"), AddInParameterEditor(typeof(DropDownParameterEditor), "valign=top;multiple=true;NewGUI=true;none=true;IconPath=/Admin/Images/Ribbon/Icons/Small/Warning.png;Tooltip=Index update might affect on slower perfomance"), AddInParameterGroup("Destination"), AddInParameterOrder(80)]
+        [AddInParameter("Repositories index update"), AddInParameterEditor(typeof(DropDownParameterEditor), "multiple=true;none=true;Tooltip=Index update might affect on slower perfomance"), AddInParameterGroup("Destination"), AddInParameterOrder(80)]
         public string RepositoriesIndexUpdate { get; set; }
 
         public override void SaveAsXml(XmlTextWriter xmlTextWriter)
@@ -205,7 +131,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             xmlTextWriter.WriteElementString("HideDeactivatedProducts", HideDeactivatedProducts.ToString(CultureInfo.CurrentCulture));
             xmlTextWriter.WriteElementString(nameof(DisableCacheClearing), DisableCacheClearing.ToString(CultureInfo.CurrentCulture));
             xmlTextWriter.WriteElementString("SkipFailingRows", SkipFailingRows.ToString(CultureInfo.CurrentCulture));
-            xmlTextWriter.WriteElementString("UseDatabaseViews", UseDatabaseViews.ToString(CultureInfo.CurrentCulture));
             GetSchema().SaveAsXml(xmlTextWriter);
         }
 
@@ -288,12 +213,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                     case "SkipFailingRows":
                         if (node.HasChildNodes)
                             SkipFailingRows = node.FirstChild.Value == "True";
-                        break;
-                    case "UseDatabaseViews":
-                        if (node.HasChildNodes)
-                        {
-                            UseDatabaseViews = node.FirstChild.Value == "True";
-                        }
                         break;
                 }
             }
@@ -702,7 +621,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             root.Add(CreateParameterNode(GetType(), "Hide deactivated products", HideDeactivatedProducts.ToString()));
             root.Add(CreateParameterNode(GetType(), "Disable cache clearing", DisableCacheClearing.ToString()));
             root.Add(CreateParameterNode(GetType(), "Persist successful rows and skip failing rows", SkipFailingRows.ToString()));
-            root.Add(CreateParameterNode(GetType(), "Use database views", UseDatabaseViews.ToString()));
             return document.ToString();
         }
 

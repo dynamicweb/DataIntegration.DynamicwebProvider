@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Dynamicweb.DataIntegration.Integration;
+using Dynamicweb.DataIntegration.Integration.Interfaces;
+using Dynamicweb.DataIntegration.ProviderHelpers;
+using Dynamicweb.DataIntegration.Providers.SqlProvider;
+using Dynamicweb.Logging;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using Dynamicweb.DataIntegration.Integration.Interfaces;
-using Dynamicweb.Logging;
-using Dynamicweb.DataIntegration.Integration;
-using Dynamicweb.DataIntegration.ProviderHelpers;
-using Dynamicweb.DataIntegration.Providers.SqlProvider;
 
 namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
 {
@@ -130,7 +130,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                             string userNumber = (string)row[columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber").SourceColumn.Name];
                             if (!string.IsNullOrEmpty(userNumber))
                             {
-                                userIDs = ExistingUsers.Select("AccessUserCustomerNumber='" + userNumber.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()).ToList();                                
+                                userIDs = ExistingUsers.Select("AccessUserCustomerNumber='" + userNumber.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()).ToList();
                             }
                         }
                         var externalIdmapping = columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionExternalID");
@@ -139,7 +139,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                             string externalId = (string)row[externalIdmapping.SourceColumn.Name];
                             if (!string.IsNullOrEmpty(externalId))
                             {
-                                userIDs.AddRange(ExistingUsers.Select("AccessUserExternalID='" + externalId.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()));                                
+                                userIDs.AddRange(ExistingUsers.Select("AccessUserExternalID='" + externalId.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()));
                             }
                         }
                         var userIdMapping = columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionAccessUserID");
@@ -152,7 +152,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                             }
                         }
                         foreach (string userID in userIDs.Distinct())
-                        {                            
+                        {
                             DataRow relation = TableToWrite.NewRow();
                             relation["AssortmentPermissionAssortmentID"] = assortmentID;
                             relation["AssortmentPermissionAccessUserID"] = userID;
@@ -179,13 +179,13 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                         case ScriptType.Prepend:
                             dataRow[columnMapping.DestinationColumn.Name] = columnMapping.ScriptValue + columnMapping.ConvertInputToOutputFormat(row[columnMapping.SourceColumn.Name]);
                             break;
-                        case ScriptType.Constant:                        
+                        case ScriptType.Constant:
                             dataRow[columnMapping.DestinationColumn.Name] = columnMapping.GetScriptValue();
                             break;
                         case ScriptType.NewGuid:
                             dataRow[columnMapping.DestinationColumn.Name] = columnMapping.GetScriptValue();
                             break;
-                    }                    
+                    }
                 }
                 else
                 {
@@ -247,14 +247,14 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             {
                 string extraConditions = GetExtraConditions(Mapping, shop, null);
                 DeleteExcessFromMainTable(extraConditions);
-            }            
+            }
         }
 
         internal void DeleteExistingFromMainTable(string shop, SqlTransaction transaction)
-        {                                    
+        {
             SqlCommand.Transaction = transaction;
             string extraConditions = GetExtraConditions(Mapping, shop, null);
-            DeleteExistingFromMainTable(Mapping, extraConditions, SqlCommand, tempTablePrefix);            
+            DeleteExistingFromMainTable(Mapping, extraConditions, SqlCommand, tempTablePrefix);
         }
 
         /// <summary>
@@ -295,7 +295,17 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                 {
                     sqlClean.Append(", ProductHidden = 1");
                 }
-                sqlClean.Append(" where not exists  (select * from [" + mapping.DestinationTable.SqlSchema + "].[" + mapping.DestinationTable.Name +
+                sqlClean.Append(" where ");
+                string extraConditions = GetExtraConditions(mapping, shop, languageId);
+                if (extraConditions.Length > 0)
+                {
+                    if (extraConditions.StartsWith("and "))
+                        extraConditions = extraConditions.Substring("and ".Length - 1);
+                    sqlClean.Append(extraConditions);
+                    sqlClean.Append(" and ");
+                }
+
+                sqlClean.Append(" not exists  (select * from [" + mapping.DestinationTable.SqlSchema + "].[" + mapping.DestinationTable.Name +
                                       $"TempTableForBulkImport{mapping.GetId()}] where ");
 
                 var columnMappings = mapping.GetColumnMappings();
@@ -315,11 +325,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                 }
                 sqlClean.Remove(sqlClean.Length - 4, 4);
                 sqlClean.Append(")");
-                string extraConditions = GetExtraConditions(mapping, shop,languageId);
-                if (extraConditions.Length > 0)
-                    if (extraConditions.Length > 0)
-                        sqlClean.Append(extraConditions);
-
 
                 sqlCommand.CommandText = sqlClean.ToString();
                 sqlCommand.ExecuteNonQuery();
@@ -334,32 +339,32 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         internal static string GetExtraConditions(Mapping mapping, string shop, string languageId)
         {
             string extraConditions = "";
-            if (mapping.DestinationTable.Name == "EcomProducts" )
+            if (mapping.DestinationTable.Name == "EcomProducts")
             {
-                if ( !string.IsNullOrEmpty(shop))
-                extraConditions =                    
-                    "and not exists(select * from EcomGroupProductRelation join EcomShopGroupRelation on EcomGroupProductRelation.GroupProductRelationGroupID=EcomShopGroupRelation.ShopGroupGroupID where EcomGroupProductRelation.GroupProductRelationProductID=EcomProducts.ProductID and EcomShopGroupRelation.ShopGroupShopID<>'" +
-                    shop + "')";
+                if (!string.IsNullOrEmpty(shop))
+                    extraConditions =
+                        "and not exists(select * from EcomGroupProductRelation join EcomShopGroupRelation on EcomGroupProductRelation.GroupProductRelationGroupID=EcomShopGroupRelation.ShopGroupGroupID where EcomGroupProductRelation.GroupProductRelationProductID=EcomProducts.ProductID and EcomShopGroupRelation.ShopGroupShopID<>'" +
+                        shop + "')";
                 if (!string.IsNullOrEmpty(languageId))
                 {
-                    extraConditions= extraConditions+ "and (EcomProducts.ProductLanguageID='" + languageId + "')";
+                    extraConditions = extraConditions + "and (EcomProducts.ProductLanguageID='" + languageId + "')";
                 }
             }
             else if (mapping.DestinationTable.Name == "EcomGroupProductRelation" && !string.IsNullOrEmpty(shop))
             {
-                extraConditions =                    
+                extraConditions =
                     "and not exists(select * from EcomShopGroupRelation where EcomGroupProductRelation.GroupProductRelationGroupID=EcomShopGroupRelation.ShopGroupGroupID and  EcomShopGroupRelation.ShopGroupShopID<>'" +
                     shop + "')";
             }
-            else if (mapping.DestinationTable.Name == "EcomGroups" )
+            else if (mapping.DestinationTable.Name == "EcomGroups")
             {
                 if (!string.IsNullOrEmpty(shop))
                 {
-                    extraConditions =                        
+                    extraConditions =
                         "and not exists(select * from EcomShopGroupRelation where EcomGroups.groupid=EcomShopGroupRelation.ShopGroupGroupID and  EcomShopGroupRelation.ShopGroupShopID<>'" +
                         shop + "')";
                 }
-                    if (!string.IsNullOrEmpty(languageId))
+                if (!string.IsNullOrEmpty(languageId))
                 {
                     extraConditions = extraConditions + "and (EcomGroups.GroupLanguageID='" + languageId + "')";
                 }
@@ -373,14 +378,14 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             {
                 if (!string.IsNullOrEmpty(shop))
                 {
-                    extraConditions =                       
+                    extraConditions =
                         "and not exists(select * from EcomGroupProductRelation join EcomShopGroupRelation on EcomGroupProductRelation.GroupProductRelationGroupID=EcomShopGroupRelation.ShopGroupGroupID where EcomGroupProductRelation.GroupProductRelationProductID=EcomDetails.DetailProductID and EcomShopGroupRelation.ShopGroupShopID<>'" +
                         shop + "')";
-                }                
+                }
             }
             return extraConditions;
         }
-        
+
         /// <summary>
         /// Returns the sql condition to delete the language specific rows based on the import source languages or
         /// default language id(if it is present)
@@ -416,7 +421,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                         ret = string.Format(" AND [EcomGroups].[GroupLanguageID] IN (SELECT DISTINCT([GroupLanguageID]) FROM [EcomGroups{0}]) ", tempTablePrefix);
                     }
                 }
-            }            
+            }
             return ret;
         }
 
@@ -436,13 +441,13 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             if (job != null)
             {
                 if (DataToWrite.Tables.Contains("EcomAssortmentPermissions" + tempTablePrefix) && job.Mappings.Find(m => m.DestinationTable.Name == "EcomAssortmentPermissions") != null)
-                {                    
+                {
                     Mapping mapping = job.Mappings.Find(m => m.DestinationTable.Name == "EcomAssortmentPermissions");
                     if (mapping.GetColumnMappings().Find(cm => string.Compare(cm.DestinationColumn.Name, "AssortmentPermissionAccessUserID", true) == 0) == null)
                     {
                         //Source columns are irrelevant, but must be set, so they are set to a random column
                         Column randomColumn = job.Source.GetSchema().GetTables().Where(table => table.Columns.Count > 0).First().Columns.First();
-                        mapping.AddMapping(randomColumn, job.Destination.GetSchema().GetTables().Find(t => t.Name == "EcomAssortmentPermissions").Columns.Find(c => string.Compare(c.Name, "AssortmentPermissionAccessUserID", true) == 0), false);
+                        mapping.AddMapping(randomColumn, job.Destination.GetSchema().GetTables().Find(t => t.Name == "EcomAssortmentPermissions").Columns.Find(c => string.Compare(c.Name, "AssortmentPermissionAccessUserID", true) == 0), true);
                     }
                 }
             }
