@@ -186,15 +186,16 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                         case ScriptType.NewGuid:
                             dataRow[columnMapping.DestinationColumn.Name] = columnMapping.GetScriptValue();
                             break;
-                        //case ScriptType.Substring:
-                        //    var substringScriptValue = columnMapping.ScriptValue.Split(':');
-                        //    if (substringScriptValue.Count() != 2 ||!int.TryParse(substringScriptValue[0], out int startIndex) || (!int.TryParse(substringScriptValue[1], out int length)))
-                        //    {
-                        //        logger.Log($"Script value {columnMapping.ScriptValue} defined on {columnMapping.SourceColumn.Name} is incorrect and could not be processed");
-                        //        continue;
-                        //    }
-                        //    dataRow[columnMapping.DestinationColumn.Name] = columnMapping.ConvertInputToOutputFormat(row[columnMapping.SourceColumn.Name]).ToString().Substring(startIndex, length);
-                        //    break;
+                        case ScriptType.Substring:
+                            var substringScriptValue = columnMapping.ScriptValue.Split(':');
+                            if (substringScriptValue.Count() != 2 || !int.TryParse(substringScriptValue[0], out int startIndex) || (!int.TryParse(substringScriptValue[1], out int length)))
+                            {
+                                dataRow[columnMapping.DestinationColumn.Name] = row[columnMapping.SourceColumn.Name];
+                                logger.Log($"Script value {columnMapping.ScriptValue} defined on {columnMapping.SourceColumn.Name} is incorrect and could not be processed. Inserted raw value without scripting.");
+                                continue;
+                            }
+                            dataRow[columnMapping.DestinationColumn.Name] = columnMapping.ConvertInputToOutputFormat(row[columnMapping.SourceColumn.Name]).ToString().Substring(startIndex, length);
+                            break;
                     }
                 }
                 else
