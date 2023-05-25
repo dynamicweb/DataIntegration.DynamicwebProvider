@@ -2,6 +2,7 @@
 using Dynamicweb.DataIntegration.Integration;
 using Dynamicweb.DataIntegration.Integration.Interfaces;
 using Dynamicweb.DataIntegration.ProviderHelpers;
+using Dynamicweb.DataIntegration.Providers.SqlProvider;
 using Dynamicweb.Extensibility;
 using Dynamicweb.Extensibility.AddIns;
 using Dynamicweb.Extensibility.Editors;
@@ -335,6 +336,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                 {
                     if (mapping.Active)
                     {
+                        var columnMappings = mapping.GetColumnMappings();
                         Logger.Log("Starting import to temporary table for " + mapping.DestinationTable.Name + ".");
                         using (var reader = job.Source.GetReader(mapping))
                         {
@@ -347,6 +349,30 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                                 bool discardDuplicates = optionValue.HasValue ? optionValue.Value : DiscardDuplicates;
                                 optionValue = mapping.GetOptionValue("DeactivateMissingProducts");
                                 bool deactivateMissingProducts = optionValue.HasValue ? optionValue.Value : DeactivateMissingProducts;
+
+                                if (!string.IsNullOrEmpty(defaultLanguage))
+                                {
+                                    string destinationColumnNameForLanguageId = MappingExtensions.GetLanguageIdColumnName(mapping.DestinationTable.Name);
+                                    if (!string.IsNullOrEmpty(destinationColumnNameForLanguageId) && !columnMappings.Any(obj => obj.Active && obj.DestinationColumn.Name == destinationColumnNameForLanguageId))
+                                    {
+                                        Column randomColumn = mapping.SourceTable.Columns.First();
+                                        var languageColumnMapping = mapping.AddMapping(randomColumn, mapping.DestinationTable.Columns.Find(c => string.Compare(c.Name, MappingExtensions.GetLanguageIdColumnName(mapping.DestinationTable.Name), true) == 0));
+                                        languageColumnMapping.ScriptType = ScriptType.Constant;
+                                        languageColumnMapping.ScriptValue = defaultLanguage;
+                                    }
+                                }
+
+                                if (!string.IsNullOrEmpty(Shop))
+                                {
+                                    string destinationColumnNameForShopId = MappingExtensions.GetShopIdColumnName(mapping.DestinationTable.Name);
+                                    if (!string.IsNullOrEmpty(destinationColumnNameForShopId) && !columnMappings.Any(obj => obj.Active && obj.DestinationColumn.Name == destinationColumnNameForShopId))
+                                    {
+                                        Column randomColumn = mapping.SourceTable.Columns.First();
+                                        var shopColumnMapping = mapping.AddMapping(randomColumn, mapping.DestinationTable.Columns.Find(c => string.Compare(c.Name, MappingExtensions.GetShopIdColumnName(mapping.DestinationTable.Name), true) == 0));
+                                        shopColumnMapping.ScriptType = ScriptType.Constant;
+                                        shopColumnMapping.ScriptValue = Shop;
+                                    }
+                                }
 
                                 writer = new DynamicwebBulkInsertDestinationWriter(mapping, Connection, deactivateMissingProducts, removeMissingAfterImport, Logger, AssortmentHandler, discardDuplicates, RemoveMissingAfterImportDestinationTablesOnly, SkipFailingRows);
                                 Writers.Add(writer);
