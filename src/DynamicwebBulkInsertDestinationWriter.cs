@@ -107,11 +107,6 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         /// <param name="Row">The row to be written.</param>
         public override void Write(Dictionary<string, object> row)
         {
-            if (!Mapping.Conditionals.CheckConditionals(row))
-            {
-                return;
-            }
-
             DataRow dataRow = TableToWrite.NewRow();
             var columnMappings = Mapping.GetColumnMappings();
             switch (Mapping.DestinationTable.Name)
@@ -168,23 +163,15 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             {
                 if (columnMapping.HasScriptWithValue || row.ContainsKey(columnMapping.SourceColumn.Name))
                 {
-                    switch (columnMapping.ScriptType)
+                    object dataToRow = columnMapping.ConvertInputValueToOutputValue(row[columnMapping.SourceColumn?.Name] ?? null);
+
+                    if (columnMappings.Any(obj => obj.DestinationColumn.Name == columnMapping.DestinationColumn.Name && obj.GetId() != columnMapping.GetId()))
                     {
-                        case ScriptType.None:
-                            dataRow[columnMapping.DestinationColumn.Name] = columnMapping.ConvertInputToOutputFormat(row[columnMapping.SourceColumn.Name]);
-                            break;
-                        case ScriptType.Append:
-                            dataRow[columnMapping.DestinationColumn.Name] = columnMapping.ConvertInputToOutputFormat(row[columnMapping.SourceColumn.Name]) + columnMapping.ScriptValue;
-                            break;
-                        case ScriptType.Prepend:
-                            dataRow[columnMapping.DestinationColumn.Name] = columnMapping.ScriptValue + columnMapping.ConvertInputToOutputFormat(row[columnMapping.SourceColumn.Name]);
-                            break;
-                        case ScriptType.Constant:
-                            dataRow[columnMapping.DestinationColumn.Name] = columnMapping.GetScriptValue();
-                            break;
-                        case ScriptType.NewGuid:
-                            dataRow[columnMapping.DestinationColumn.Name] = columnMapping.GetScriptValue();
-                            break;
+                        dataRow[columnMapping.DestinationColumn.Name] += dataToRow.ToString();
+                    }
+                    else
+                    {
+                        dataRow[columnMapping.DestinationColumn.Name] = dataToRow;
                     }
                 }
                 else
