@@ -158,62 +158,96 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                         break;
                     case "Schema":
                         Schema = new Schema(node);
-
                         break;
                     case "RemoveMissingAfterImport":
-                        RemoveMissingAfterImport = node.FirstChild.Value == "True";
+                        if (node.HasChildNodes)
+                        {
+                            RemoveMissingAfterImport = node.FirstChild.Value == "True";
+                        }
                         break;
                     case "RemoveMissingAfterImportDestinationTablesOnly":
-                        RemoveMissingAfterImportDestinationTablesOnly = node.FirstChild.Value == "True";
+                        if (node.HasChildNodes)
+                        {
+                            RemoveMissingAfterImportDestinationTablesOnly = node.FirstChild.Value == "True";
+                        }
                         break;
                     case "DeleteIncomingItems":
-                        DeleteIncomingItems = node.FirstChild.Value == "True";
+                        if (node.HasChildNodes)
+                        {
+                            DeleteIncomingItems = node.FirstChild.Value == "True";
+                        }
                         break;
                     case "DeactivateMissingProducts":
-                        DeactivateMissingProducts = node.FirstChild.Value == "True";
+                        if (node.HasChildNodes)
+                        {
+                            DeactivateMissingProducts = node.FirstChild.Value == "True";
+                        }
                         break;
                     case "UpdateOnlyExistingRecords":
-                        UpdateOnlyExistingRecords = node.FirstChild.Value == "True";
+                        if (node.HasChildNodes)
+                        {
+                            UpdateOnlyExistingRecords = node.FirstChild.Value == "True";
+                        }
                         break;
                     case "InsertOnlyNewRecords":
-                        InsertOnlyNewRecords = node.FirstChild.Value == "True";
+                        if (node.HasChildNodes)
+                        {
+                            InsertOnlyNewRecords = node.FirstChild.Value == "True";
+                        }
                         break;
                     case "Shop":
                         if (node.HasChildNodes)
+                        {
                             Shop = node.FirstChild.Value;
+                        }
                         break;
                     case "UserKeyField":
                         if (node.HasChildNodes)
+                        {
                             UserKeyField = node.FirstChild.Value;
+                        }
                         break;
                     case "DeleteProductsAndGroupForSpecificLanguage":
                         if (node.HasChildNodes)
+                        {
                             DeleteProductsAndGroupForSpecificLanguage = node.FirstChild.Value == "True";
+                        }
                         break;
                     case "DefaultLanguage":
                         if (node.HasChildNodes)
+                        {
                             DefaultLanguage = node.FirstChild.Value;
+                        }
                         break;
                     case "RepositoriesIndexUpdate":
                         if (node.HasChildNodes)
+                        {
                             RepositoriesIndexUpdate = node.FirstChild.Value;
+                        }
                         break;
                     case "DiscardDuplicates":
                         if (node.HasChildNodes)
+                        {
                             DiscardDuplicates = node.FirstChild.Value == "True";
+                        }
                         break;
                     case "HideDeactivatedProducts":
                         if (node.HasChildNodes)
+                        {
                             HideDeactivatedProducts = node.FirstChild.Value == "True";
+                        }
                         break;
                     case nameof(DisableCacheClearing):
                         if (node.HasChildNodes)
+                        {
                             DisableCacheClearing = node.FirstChild.Value == "True";
+                        }
                         break;
-
                     case "SkipFailingRows":
                         if (node.HasChildNodes)
+                        {
                             SkipFailingRows = node.FirstChild.Value == "True";
+                        }
                         break;
                 }
             }
