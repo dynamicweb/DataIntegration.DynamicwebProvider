@@ -161,9 +161,10 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
             var activeColumnMappings = columnMappings.Where(cm => cm.Active);
             foreach (ColumnMapping columnMapping in activeColumnMappings)
             {
-                if (columnMapping.HasScriptWithValue || row.ContainsKey(columnMapping.SourceColumn.Name))
-                {
-                    object dataToRow = columnMapping.ConvertInputValueToOutputValue(row[columnMapping.SourceColumn?.Name] ?? null);
+                object rowValue = null;
+                if (columnMapping.HasScriptWithValue || row.TryGetValue(columnMapping.SourceColumn?.Name, out rowValue))
+                {                    
+                    object dataToRow = columnMapping.ConvertInputValueToOutputValue(rowValue);
 
                     if (columnMappings.Any(obj => obj.DestinationColumn.Name == columnMapping.DestinationColumn.Name && obj.GetId() != columnMapping.GetId()))
                     {
