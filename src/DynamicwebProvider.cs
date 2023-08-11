@@ -289,10 +289,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
                         }
                         break;
                     case "DefaultLanguage":
-                        if (node.HasChildNodes)
-                        {
-                            DefaultLanguage = node.FirstChild.Value;
-                        }
+                        DefaultLanguage = node.HasChildNodes ? node.FirstChild.Value : "";
                         break;
                     case "RepositoriesIndexUpdate":
                         if (node.HasChildNodes)
