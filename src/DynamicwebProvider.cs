@@ -123,7 +123,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
 
         protected string defaultLanguage = null;
         [AddInParameter("Default Language"), AddInParameterEditor(typeof(DropDownParameterEditor), "none=true;"), AddInParameterGroup("Destination"), AddInParameterOrder(10)]
-        public string DefaultLanguage
+        public virtual string DefaultLanguage
         {
             get
             {
@@ -146,7 +146,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         }
 
         [AddInParameter("Shop"), AddInParameterEditor(typeof(DropDownParameterEditor), "none=true;"), AddInParameterGroup("Destination"), AddInParameterOrder(20)]
-        public string Shop { get; set; }
+        public virtual string Shop { get; set; }
 
 
         [AddInParameter("Insert only new records"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Inserts new records present in the source, but does not update existing records"), AddInParameterGroup("Destination"), AddInParameterOrder(23)]
