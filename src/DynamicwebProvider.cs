@@ -149,34 +149,34 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         public string Shop { get; set; }
 
 
-        [AddInParameter("Insert only new records"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(23)]
+        [AddInParameter("Insert only new records"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Inserts new records present in the source, but does not update existing records"), AddInParameterGroup("Destination"), AddInParameterOrder(23)]
         public bool InsertOnlyNewRecords { get; set; }
 
-        [AddInParameter("Update only existing records"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(25)]
+        [AddInParameter("Update only existing records"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=When this option is ON the imported rows are updated but not inserted. When OFF rows are updated and inserted"), AddInParameterGroup("Destination"), AddInParameterOrder(25)]
         public bool UpdateOnlyExistingRecords { get; set; }
 
-        [AddInParameter("Deactivate missing products"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(30)]
+        [AddInParameter("Deactivate missing products"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=When ON missing products are deactivated. When OFF no action is taken"), AddInParameterGroup("Destination"), AddInParameterOrder(30)]
         public bool DeactivateMissingProducts { get; set; }
 
-        [AddInParameter("Remove missing rows after import"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Removes rows from the destination and relation tables. This option takes precedence"), AddInParameterGroup("Destination"), AddInParameterOrder(40)]
+        [AddInParameter("Remove missing rows after import"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows not present in the import source - including related tables. This option takes precedence. When Delete incoming rows is ON, this option is ignored"), AddInParameterGroup("Destination"), AddInParameterOrder(40)]
         public override bool RemoveMissingAfterImport { get; set; }
 
-        [AddInParameter("Delete incoming rows"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(50)]
+        [AddInParameter("Delete incoming rows"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes existing rows present in the import source. When Delete incoming rows is ON, the following options are skipped: Update only existing records, Deactivate missing products, Remove missing rows after import, Delete products / groups for languages included in input, Hide deactivated products"), AddInParameterGroup("Destination"), AddInParameterOrder(50)]
         public bool DeleteIncomingItems { get; set; }
 
-        [AddInParameter("Delete products/groups for languages included in input"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(60)]
+        [AddInParameter("Delete products/groups for languages included in input"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes products and groups only from the languages included in the import. If Delete incoming rows is ON, Delete products / groups for languages included in input is skipped"), AddInParameterGroup("Destination"), AddInParameterOrder(60)]
         public bool DeleteProductsAndGroupForSpecificLanguage { get; set; }
 
-        [AddInParameter("Discard duplicates"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(70)]
+        [AddInParameter("Discard duplicates"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=When ON, duplicate rows are skipped"), AddInParameterGroup("Destination"), AddInParameterOrder(70)]
         public override bool DiscardDuplicates { get; set; }
 
-        [AddInParameter("Hide deactivated products"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(80)]
+        [AddInParameter("Hide deactivated products"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=When Deactivate missing products is ON, this option hides the deactivated products. If Delete incoming rows is ON, Hide deactivated products is skipped. If Deactivate missing products is OFF, Hide deactivated products is skipped"), AddInParameterGroup("Destination"), AddInParameterOrder(80)]
         public bool HideDeactivatedProducts { get; set; }
 
-        [AddInParameter("Disable cache clearing"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(90)]
+        [AddInParameter("Disable cache clearing"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=This setting disables cache clearing after import\t"), AddInParameterGroup("Destination"), AddInParameterOrder(90)]
         public bool DisableCacheClearing { get; set; }
 
-        [AddInParameter("Persist successful rows and skip failing rows"), AddInParameterEditor(typeof(YesNoParameterEditor), ""), AddInParameterGroup("Destination"), AddInParameterOrder(100)]
+        [AddInParameter("Persist successful rows and skip failing rows"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Checking this box allows the activity to do partial imports by skipping problematic records and keeping the succesful ones"), AddInParameterGroup("Destination"), AddInParameterOrder(100)]
         public override bool SkipFailingRows { get; set; }
 
         /// <summary>
