@@ -156,16 +156,16 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
         public bool UpdateOnlyExistingRecords { get; set; }
 
         [AddInParameter("Deactivate missing products"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=When ON missing products are deactivated. When OFF no action is taken"), AddInParameterGroup("Destination"), AddInParameterOrder(30)]
-        public bool DeactivateMissingProducts { get; set; }
+        public virtual bool DeactivateMissingProducts { get; set; }
 
         [AddInParameter("Remove missing rows after import"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows not present in the import source - including related tables. This option takes precedence. When Delete incoming rows is ON, this option is ignored"), AddInParameterGroup("Destination"), AddInParameterOrder(40)]
         public override bool RemoveMissingAfterImport { get; set; }
 
         [AddInParameter("Delete incoming rows"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes existing rows present in the import source. When Delete incoming rows is ON, the following options are skipped: Update only existing records, Deactivate missing products, Remove missing rows after import, Delete products / groups for languages included in input, Hide deactivated products"), AddInParameterGroup("Destination"), AddInParameterOrder(50)]
-        public bool DeleteIncomingItems { get; set; }
+        public virtual bool DeleteIncomingItems { get; set; }
 
         [AddInParameter("Delete products/groups for languages included in input"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes products and groups only from the languages included in the import. If Delete incoming rows is ON, Delete products / groups for languages included in input is skipped"), AddInParameterGroup("Destination"), AddInParameterOrder(60)]
-        public bool DeleteProductsAndGroupForSpecificLanguage { get; set; }
+        public virtual bool DeleteProductsAndGroupForSpecificLanguage { get; set; }
 
         [AddInParameter("Discard duplicates"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=When ON, duplicate rows are skipped"), AddInParameterGroup("Destination"), AddInParameterOrder(70)]
         public override bool DiscardDuplicates { get; set; }
