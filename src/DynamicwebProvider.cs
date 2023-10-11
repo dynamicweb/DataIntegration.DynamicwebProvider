@@ -20,7 +20,7 @@ using System.Xml.Linq;
 namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider;
 
 [AddInName("Dynamicweb.DataIntegration.Providers.Provider"), AddInLabel("Dynamicweb Provider"), AddInDescription("Dynamicweb provider"), AddInIgnore(false), AddInUseParameterOrdering(true)]
-public class DynamicwebProvider : BaseSqlProvider, IDestination, IParameterOptions
+public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
 {
     protected Schema Schema;
     protected bool IsFirstJobRun = true;
