@@ -2,11 +2,8 @@
 using Dynamicweb.DataIntegration.Integration;
 using Dynamicweb.DataIntegration.Integration.Interfaces;
 using Dynamicweb.DataIntegration.ProviderHelpers;
-using Dynamicweb.Extensibility;
 using Dynamicweb.Extensibility.AddIns;
 using Dynamicweb.Extensibility.Editors;
-using Dynamicweb.Indexing;
-using Dynamicweb.Indexing.Repositories;
 using Dynamicweb.Logging;
 using System;
 using System.Collections.Generic;
@@ -720,15 +717,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
         root.Add(CreateParameterNode(GetType(), "Persist successful rows and skip failing rows", SkipFailingRows.ToString()));
         return document.ToString();
     }
-
-    #region IDestination Members
-
-    List<SchemaComparerResult> IDestination.CheckMapping(Mapping map)
-    {
-        return new List<SchemaComparerResult>();
-    }
-
-    #endregion
 
     private void UpdateIPaperTables(Schema schema)
     {
