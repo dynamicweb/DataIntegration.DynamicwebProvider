@@ -1,11 +1,10 @@
 ﻿using Dynamicweb.Ecommerce.Assortments;
 
-namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider
+namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider;
+
+public class AssortmentInfo
 {
-    public class AssortmentInfo
-    {
-        public string AssortmentID;
-        public AssortmentRelationType RelationType;
-        public string RelationID;
-    }
+    public string AssortmentID;
+    public AssortmentRelationType RelationType;
+    public string RelationID;
 }
