@@ -2,6 +2,7 @@
 	<PropertyGroup>
     <Version>10.0.7</Version>
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<Title>Dynamicweb Provider</Title>
 		<Description>Dynamicweb Provider</Description>
 	</PropertyGroup>
 	<PropertyGroup>
