@@ -393,7 +393,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
 
     public override Schema GetOriginalSourceSchema()
     {
-        Schema result = GetSqlSourceSchema(Connection);
+        Schema result = GetSqlSourceSchema(Connection, null);
         //set key for AccessUserTable
         if (UserKeyField != null)
         {
