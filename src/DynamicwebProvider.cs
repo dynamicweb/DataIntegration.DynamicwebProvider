@@ -487,7 +487,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
                             if (!string.IsNullOrEmpty(defaultLanguage))
                             {
                                 string destinationColumnNameForLanguageId = MappingExtensions.GetLanguageIdColumnName(mapping.DestinationTable.Name);
-                                if (!string.IsNullOrEmpty(destinationColumnNameForLanguageId) && !columnMappings.Any(obj => obj.Active && obj.DestinationColumn.Name == destinationColumnNameForLanguageId))
+                                if (!string.IsNullOrEmpty(destinationColumnNameForLanguageId) && !columnMappings.Any(obj => obj.Active && obj.DestinationColumn.Name.Equals(destinationColumnNameForLanguageId, StringComparison.OrdinalIgnoreCase)))
                                 {
                                     Column randomColumn = mapping.SourceTable.Columns.First();
                                     var languageColumnMapping = mapping.AddMapping(randomColumn, mapping.DestinationTable.Columns.Find(c => string.Compare(c.Name, MappingExtensions.GetLanguageIdColumnName(mapping.DestinationTable.Name), true) == 0));
@@ -499,7 +499,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
                             if (!string.IsNullOrEmpty(Shop))
                             {
                                 string destinationColumnNameForShopId = MappingExtensions.GetShopIdColumnName(mapping.DestinationTable.Name);
-                                if (!string.IsNullOrEmpty(destinationColumnNameForShopId) && !columnMappings.Any(obj => obj.Active && obj.DestinationColumn.Name == destinationColumnNameForShopId))
+                                if (!string.IsNullOrEmpty(destinationColumnNameForShopId) && !columnMappings.Any(obj => obj.Active && obj.DestinationColumn.Name.Equals(destinationColumnNameForShopId, StringComparison.OrdinalIgnoreCase)))
                                 {
                                     Column randomColumn = mapping.SourceTable.Columns.First();
                                     var shopColumnMapping = mapping.AddMapping(randomColumn, mapping.DestinationTable.Columns.Find(c => string.Compare(c.Name, MappingExtensions.GetShopIdColumnName(mapping.DestinationTable.Name), true) == 0));
