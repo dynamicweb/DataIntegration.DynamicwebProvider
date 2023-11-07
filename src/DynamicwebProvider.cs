@@ -777,6 +777,11 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
         }
     }
 
+    public override Schema GetOriginalDestinationSchema()
+    {
+        return GetSchema();
+    }
+
     public IEnumerable<ParameterOption> GetParameterOptions(string parameterName)
     {
         var options = new List<ParameterOption>();
