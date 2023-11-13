@@ -836,4 +836,14 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
         }
         return options;
     }
+
+    public override void Close()
+    {
+        Connection.Close();
+    }
+
+    public override ISourceReader GetReader(Mapping mapping)
+    {
+        return new DynamicwebSourceReader(mapping, Connection);
+    }
 }
