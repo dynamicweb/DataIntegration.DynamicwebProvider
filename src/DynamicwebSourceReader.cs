@@ -1,6 +1,7 @@
 ﻿using Dynamicweb.DataIntegration.Integration;
 using System.Collections.Generic;
 using System;
+using System.Data.SqlClient;
 
 public class DynamicwebSourceReader : BaseSqlReader
 {
