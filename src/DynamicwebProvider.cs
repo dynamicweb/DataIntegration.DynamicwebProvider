@@ -837,12 +837,12 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
         return options;
     }
 
-    public new void Close()
+    public override void Close()
     {
         Connection.Close();
     }
 
-    public new ISourceReader GetReader(Mapping mapping)
+    public override ISourceReader GetReader(Mapping mapping)
     {
         return new DynamicwebSourceReader(mapping, Connection);
     }
