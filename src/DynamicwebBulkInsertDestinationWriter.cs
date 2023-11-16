@@ -16,7 +16,7 @@ namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider;
 public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestinationWriter, IDisposable
 {
     private readonly bool deactivateMissingProducts;
-    private AssortmentHandler assortmentHandler; 
+    private AssortmentHandler assortmentHandler;
     protected SqlBulkCopy SqlBulkCopier;
     protected DataSet DataToWrite = new DataSet();
     protected DataTable TableToWrite;
@@ -225,7 +225,7 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
         {
             object rowValue = null;
             if (columnMapping.HasScriptWithValue || row.TryGetValue(columnMapping.SourceColumn?.Name, out rowValue))
-            {                    
+            {
                 object dataToRow = columnMapping.ConvertInputValueToOutputValue(rowValue);
 
                 if (columnMappings.Any(obj => obj.DestinationColumn.Name == columnMapping.DestinationColumn.Name && obj.GetId() != columnMapping.GetId()))
@@ -281,7 +281,7 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
         }
     }
 
-    internal void MoveDataToMainTable(SqlTransaction sqlTransaction, bool updateOnlyExistingRecords, bool insertOnlyNewRecords) =>
+    internal int MoveDataToMainTable(SqlTransaction sqlTransaction, bool updateOnlyExistingRecords, bool insertOnlyNewRecords) =>
         MoveDataToMainTable(Mapping, SqlCommand, sqlTransaction, tempTablePrefix, updateOnlyExistingRecords, insertOnlyNewRecords);
 
     internal void DeleteExcessFromMainTable(string shop, SqlTransaction transaction, bool deleteProductsAndGroupForSpecificLanguage, string languageId, bool hideDeactivatedProducts)
@@ -290,24 +290,30 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
         if ((Mapping.DestinationTable.Name == "EcomProducts" || Mapping.DestinationTable.Name == "EcomGroups") && deleteProductsAndGroupForSpecificLanguage)
         {
             string extraConditions = GetDeleteFromSpecificLanguageExtraCondition(Mapping, tempTablePrefix, languageId);
-            DeleteExcessFromMainTable(Mapping, extraConditions, SqlCommand, tempTablePrefix, false);
+            var rowsAffected = DeleteExcessFromMainTable(SqlCommand, Mapping, extraConditions, tempTablePrefix, false);
+            if (rowsAffected > 0)
+                logger.Log($"The number of deleted rows: {rowsAffected} for the destination {Mapping.DestinationTable.Name} table mapping");
         }
         else if (Mapping.DestinationTable.Name == "EcomProducts" && deactivateMissingProducts)
         {
-            DeactivateMissingProductsInMainTable(Mapping, SqlCommand, shop, null, hideDeactivatedProducts);
+            var rowsAffected = DeactivateMissingProductsInMainTable(Mapping, SqlCommand, shop, null, hideDeactivatedProducts);
+            if (rowsAffected > 0)
+                logger.Log($"The number of the deactivated product rows: {rowsAffected}");
         }
         else if ((removeMissingAfterImport || removeMissingAfterImportDestinationTablesOnly) && Mapping.DestinationTable.Name != "AccessUser")
         {
             string extraConditions = GetExtraConditions(Mapping, shop, null);
-            DeleteExcessFromMainTable(Mapping, extraConditions, SqlCommand, tempTablePrefix, removeMissingAfterImportDestinationTablesOnly);
+            var rowsAffected = DeleteExcessFromMainTable(SqlCommand, Mapping, extraConditions, tempTablePrefix, removeMissingAfterImportDestinationTablesOnly);
+            if (rowsAffected > 0)
+                logger.Log($"The number of deleted rows: {rowsAffected} for the destination {Mapping.DestinationTable.Name} table mapping");
         }
     }
 
-    internal void DeleteExistingFromMainTable(string shop, SqlTransaction transaction)
+    internal int DeleteExistingFromMainTable(string shop, SqlTransaction transaction)
     {
         SqlCommand.Transaction = transaction;
         string extraConditions = GetExtraConditions(Mapping, shop, null);
-        DeleteExistingFromMainTable(Mapping, extraConditions, SqlCommand, tempTablePrefix);
+        return DeleteExistingFromMainTable(SqlCommand, Mapping, extraConditions, tempTablePrefix);
     }
 
     internal void FinishWriting()
