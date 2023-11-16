@@ -557,7 +557,9 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
                 {
                     if (deleteIncomingItems)
                     {
-                        writer.DeleteExistingFromMainTable(Shop, sqlTransaction);
+                        int rowsAffected = writer.DeleteExistingFromMainTable(Shop, sqlTransaction);
+                        if (rowsAffected > 0)
+                            Logger.Log($"The number of deleted rows: {rowsAffected} for the destination {writer.Mapping.DestinationTable.Name} table mapping");
                     }
                     else
                     {
@@ -567,7 +569,9 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
                         optionValue = writer.Mapping.GetOptionValue("UpdateOnlyExistingRecords");
                         bool updateOnlyExistingRecords = optionValue.HasValue ? optionValue.Value : UpdateOnlyExistingRecords;
 
-                        writer.MoveDataToMainTable(sqlTransaction, updateOnlyExistingRecords, InsertOnlyNewRecords);
+                        int rowsAffected = writer.MoveDataToMainTable(sqlTransaction, updateOnlyExistingRecords, InsertOnlyNewRecords);
+                        if (rowsAffected > 0)
+                            Logger.Log($"The number of rows affected: {rowsAffected} in the {writer.Mapping.DestinationTable.Name} table");
                     }
                 }
                 else
@@ -586,7 +590,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
 
                 if (!deleteIncomingItems && writer.RowsToWriteCount > 0)
                 {
-                    writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
+                    writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);                    
                 }
             }
 
