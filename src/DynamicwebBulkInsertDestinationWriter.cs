@@ -415,7 +415,7 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
     public new void Close()
     {
         string tableName = Mapping.DestinationTable.Name + tempTablePrefix;
-        SqlCommand.CommandText = "if exists (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'" + tableName + "') AND type in (N'U')) drop table " + tableName;
+        SqlCommand.CommandText = $"if exists (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{tableName}') AND type in (N'U')) drop table [{tableName}]";
         SqlCommand.ExecuteNonQuery();
         ((IDisposable)SqlBulkCopier).Dispose();
         if (duplicateRowsHandler != null)

@@ -651,15 +651,12 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
         }
         finally
         {
-            if (exception != null)
+            foreach (var writer in Writers)
             {
-                foreach (var writer in Writers)
-                {
-                    writer.Close();
-                }
-                job.Source.Close();
-                Connection.Dispose();
+                writer.Close();
             }
+            job.Source.Close();
+            Connection.Dispose();
             sourceRow = null;
         }
         if (IsFirstJobRun)
