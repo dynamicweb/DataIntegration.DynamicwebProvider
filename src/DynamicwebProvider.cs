@@ -625,8 +625,10 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
         {
             exception = ex;
             string msg = ex.Message;
+            string stackTrace = ex.StackTrace;
 
-            LogManager.System.GetLogger(LogCategory.Application, "Dataintegration").Error($"{GetType().Name} error: {ex.Message} Stack: {ex.StackTrace}", ex);
+            Logger?.Error($"Error: {msg.Replace(System.Environment.NewLine, " ")} Stack: {stackTrace.Replace(System.Environment.NewLine, " ")}", ex);
+            LogManager.System.GetLogger(LogCategory.Application, "Dataintegration").Error($"{GetType().Name} error: {msg} Stack: {stackTrace}", ex);
 
             if (ex.Message.Contains("Subquery returned more than 1 value"))
                 msg += System.Environment.NewLine + "This error usually indicates duplicates on column that is used as primary key or identity.";
