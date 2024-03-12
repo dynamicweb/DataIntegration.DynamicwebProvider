@@ -17,7 +17,7 @@ using System.Xml.Linq;
 namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider;
 
 [AddInName("Dynamicweb.DataIntegration.Providers.Provider"), AddInLabel("Dynamicweb Provider"), AddInDescription("Dynamicweb provider"), AddInIgnore(false), AddInUseParameterOrdering(true)]
-public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
+public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameterVisibility
 {
     protected Schema Schema;
     protected bool IsFirstJobRun = true;
@@ -149,13 +149,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
         {
             if (defaultLanguage == null)
             {
-                SqlCommand sqlCommand = new SqlCommand("select top(1) ecomlanguages.LanguageID from ecomlanguages where ecomlanguages.languageisdefault=1", Connection);
-                if (Connection.State == ConnectionState.Closed)
-                    Connection.Open();
-                var result = sqlCommand.ExecuteReader();
-                if (result.Read())
-                    defaultLanguage = (string)result["LanguageID"];
-                result.Close();
+                defaultLanguage = Ecommerce.Services.Languages.GetDefaultLanguageId();
             }
             return defaultLanguage;
         }
@@ -164,6 +158,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
             defaultLanguage = value;
         }
     }
+
     [AddInParameter("Shop"), AddInParameterEditor(typeof(DropDownParameterEditor), "none=true;"), AddInParameterGroup("Destination"), AddInParameterOrder(20)]
     public string Shop { get; set; }
 
@@ -590,7 +585,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
 
                 if (!deleteIncomingItems && writer.RowsToWriteCount > 0)
                 {
-                    writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);                    
+                    writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
                 }
             }
 
@@ -848,5 +843,22 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions
     public override ISourceReader GetReader(Mapping mapping)
     {
         return new DynamicwebSourceReader(mapping, Connection);
+    }
+
+    IEnumerable<string> IParameterVisibility.GetHiddenParameterNames(string parameterName, object parameterValue)
+    {
+        var result = new List<string>();
+        switch (parameterName)
+        {
+            case "Default Language":
+                if (string.IsNullOrEmpty(defaultLanguage) || defaultLanguage.Equals(Ecommerce.Services.Languages.GetDefaultLanguageId(), StringComparison.OrdinalIgnoreCase))
+                    result.Add("Default Language");
+                break;
+            case "Shop":
+                if (string.IsNullOrEmpty(Shop))
+                    result.Add("Shop");
+                break;
+        }
+        return result;
     }
 }
