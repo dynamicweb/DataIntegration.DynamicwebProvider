@@ -597,10 +597,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
             }
 
             sqlTransaction.Commit();
-            if (job.ServiceCacheSettings?.Services?.Any() ?? false)
-            {
-                AssortmentHandler?.RebuildAssortments();
-            }
+            AssortmentHandler?.RebuildAssortments();
             UpdateProductIndex(job);
         }
         catch (Exception ex)
