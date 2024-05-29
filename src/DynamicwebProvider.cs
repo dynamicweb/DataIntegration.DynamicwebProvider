@@ -192,7 +192,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
     [AddInParameter("Repositories index update"), AddInParameterEditor(typeof(DropDownParameterEditor), "multiple=true;none=true;Tooltip=Index update might affect on slower perfomance"), AddInParameterGroup("Destination"), AddInParameterOrder(80)]
     public string RepositoriesIndexUpdate { get; set; }
 
-    [AddInParameter("Disable cache clearing"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=This setting disables cache clearing after import\t"), AddInParameterGroup("Hidden"), AddInParameterOrder(90)]
     [Obsolete("Use the Job.ServiceCacheSettings.Services to clear wanted caches at the end of the job.")]
     public bool DisableCacheClearing { get; set; }
 
