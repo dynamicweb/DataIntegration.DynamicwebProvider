@@ -193,6 +193,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
     public string RepositoriesIndexUpdate { get; set; }
 
     [AddInParameter("Disable cache clearing"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=This setting disables cache clearing after import\t"), AddInParameterGroup("Hidden"), AddInParameterOrder(90)]
+    [Obsolete("Use the Job.ServiceCacheSettings.Services to clear wanted caches at the end of the job.")]
     public bool DisableCacheClearing { get; set; }
 
     [AddInParameter("Persist successful rows and skip failing rows"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Checking this box allows the activity to do partial imports by skipping problematic records and keeping the succesful ones"), AddInParameterGroup("Destination"), AddInParameterOrder(100)]
