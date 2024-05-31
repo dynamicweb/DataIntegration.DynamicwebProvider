@@ -7,6 +7,7 @@ using Dynamicweb.Extensibility.Editors;
 using Dynamicweb.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
@@ -189,7 +190,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
     [AddInParameter("Hide deactivated products"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=When Deactivate missing products is ON, this option hides the deactivated products. If Delete incoming rows is ON, Hide deactivated products is skipped. If Deactivate missing products is OFF, Hide deactivated products is skipped"), AddInParameterGroup("Destination"), AddInParameterOrder(80)]
     public bool HideDeactivatedProducts { get; set; }
 
-    [AddInParameter("Repositories index update"), AddInParameterEditor(typeof(DropDownParameterEditor), "multiple=true;none=true;Tooltip=Index update might affect on slower perfomance"), AddInParameterGroup("Destination"), AddInParameterOrder(80)]
+    [Obsolete("Use Job.RepositoriesIndexSettings")]
     public string RepositoriesIndexUpdate { get; set; }
 
     [AddInParameter("Disable cache clearing"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=This setting disables cache clearing after import\t"), AddInParameterGroup("Destination"), AddInParameterOrder(90)]
@@ -205,6 +206,8 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
     public virtual bool PartialUpdate { get; set; }
 
     public string UserKeyField { get; set; }
+
+    private static readonly char[] separator = [','];
 
     public override void SaveAsXml(XmlTextWriter xmlTextWriter)
     {
@@ -379,7 +382,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         UpdateSourceSettings(newProvider);
         DeleteIncomingItems = newProvider.DeleteIncomingItems;
         DeleteProductsAndGroupForSpecificLanguage = newProvider.DeleteProductsAndGroupForSpecificLanguage;
-        RepositoriesIndexUpdate = newProvider.RepositoriesIndexUpdate;
         DiscardDuplicates = newProvider.DiscardDuplicates;
         HideDeactivatedProducts = newProvider.HideDeactivatedProducts;
         DisableCacheClearing = newProvider.DisableCacheClearing;
@@ -447,6 +449,17 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
     public override bool RunJob(Job job)
     {
+        if (!string.IsNullOrEmpty(RepositoriesIndexUpdate))
+        {
+            // if the provider already have RepositoriesIndexUpdate set, then we move them to the job, and set the add-in to string.empty
+            if (job.RepositoriesIndexSettings?.RepositoriesIndexes?.Count == 0)
+            {
+                job.RepositoriesIndexSettings = new RepositoriesIndexSettings(new Collection<string>([.. RepositoriesIndexUpdate.Split(separator, StringSplitOptions.RemoveEmptyEntries)]));
+            }
+            RepositoriesIndexUpdate = string.Empty;
+            job.Save();
+        }
+
         if (IsFirstJobRun)
         {
             OrderTablesByConstraints(job, Connection);
@@ -605,16 +618,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
             }
 
             sqlTransaction.Commit();
-            if (!DisableCacheClearing)
-            {
-                Ecommerce.Common.Application.KillAll();
-                AssortmentHandler?.RebuildAssortments();
-            }
-            UpdateProductIndex(job);
-            if (!DisableCacheClearing)
-            {
-                Ecommerce.Services.Discounts.ClearCache();
-            }
+            AssortmentHandler?.RebuildAssortments();
         }
         catch (Exception ex)
         {
@@ -663,14 +667,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         return true;
     }
 
-    protected void UpdateProductIndex(Job job)
-    {
-        if (!string.IsNullOrEmpty(RepositoriesIndexUpdate))
-        {
-            UpdateIndexes(RepositoriesIndexUpdate.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList());
-        }
-    }
-
     //Fix for making Products Inactive when checkbox Deactivate Missing Products is on(deleting EcomGroupProductRelation table should be after EcomProducts table)
     private void HandleProductsWriter(List<DynamicwebBulkInsertDestinationWriter> writers)
     {
@@ -708,7 +704,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         root.Add(CreateParameterNode(GetType(), "Shop", Shop));
         root.Add(CreateParameterNode(GetType(), "Delete products/groups for languages included in input", DeleteProductsAndGroupForSpecificLanguage.ToString()));
         root.Add(CreateParameterNode(GetType(), "Default Language", DefaultLanguage));
-        root.Add(CreateParameterNode(GetType(), "Repositories index update", RepositoriesIndexUpdate));
         root.Add(CreateParameterNode(GetType(), "Discard duplicates", DiscardDuplicates.ToString()));
         root.Add(CreateParameterNode(GetType(), "Hide deactivated products", HideDeactivatedProducts.ToString()));
         root.Add(CreateParameterNode(GetType(), "Disable cache clearing", DisableCacheClearing.ToString()));
@@ -801,10 +796,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         {
             options.Add(new("Full", "Full"));
             options.Add(new("Partial", "Partial"));
-        }
-        else if (parameterName == "Repositories index update")
-        {
-            options = GetRepositoryIndexOptions().ToList();
         }
         else if (parameterName == "Default Language")
         {
