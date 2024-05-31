@@ -193,7 +193,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
     [Obsolete("Use Job.RepositoriesIndexSettings")]
     public string RepositoriesIndexUpdate { get; set; }
 
-    [AddInParameter("Disable cache clearing"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=This setting disables cache clearing after import\t"), AddInParameterGroup("Destination"), AddInParameterOrder(90)]
+    [Obsolete("Use the Job.ServiceCacheSettings.Services to clear wanted caches at the end of the job.")]
     public bool DisableCacheClearing { get; set; }
 
     [AddInParameter("Persist successful rows and skip failing rows"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Checking this box allows the activity to do partial imports by skipping problematic records and keeping the succesful ones"), AddInParameterGroup("Destination"), AddInParameterOrder(100)]
@@ -222,7 +222,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         xmlTextWriter.WriteElementString("RepositoriesIndexUpdate", RepositoriesIndexUpdate);
         xmlTextWriter.WriteElementString("DiscardDuplicates", DiscardDuplicates.ToString(CultureInfo.CurrentCulture));
         xmlTextWriter.WriteElementString("HideDeactivatedProducts", HideDeactivatedProducts.ToString(CultureInfo.CurrentCulture));
-        xmlTextWriter.WriteElementString(nameof(DisableCacheClearing), DisableCacheClearing.ToString(CultureInfo.CurrentCulture));
         xmlTextWriter.WriteElementString("SkipFailingRows", SkipFailingRows.ToString(CultureInfo.CurrentCulture));
         GetSchema().SaveAsXml(xmlTextWriter);
     }
@@ -326,12 +325,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                         HideDeactivatedProducts = node.FirstChild.Value == "True";
                     }
                     break;
-                case nameof(DisableCacheClearing):
-                    if (node.HasChildNodes)
-                    {
-                        DisableCacheClearing = node.FirstChild.Value == "True";
-                    }
-                    break;
                 case "SkipFailingRows":
                     if (node.HasChildNodes)
                     {
@@ -382,7 +375,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         DeleteProductsAndGroupForSpecificLanguage = newProvider.DeleteProductsAndGroupForSpecificLanguage;
         DiscardDuplicates = newProvider.DiscardDuplicates;
         HideDeactivatedProducts = newProvider.HideDeactivatedProducts;
-        DisableCacheClearing = newProvider.DisableCacheClearing;
         SkipFailingRows = newProvider.SkipFailingRows;
     }
 
@@ -709,7 +701,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         root.Add(CreateParameterNode(GetType(), "Default Language", DefaultLanguage));
         root.Add(CreateParameterNode(GetType(), "Discard duplicates", DiscardDuplicates.ToString()));
         root.Add(CreateParameterNode(GetType(), "Hide deactivated products", HideDeactivatedProducts.ToString()));
-        root.Add(CreateParameterNode(GetType(), "Disable cache clearing", DisableCacheClearing.ToString()));
         root.Add(CreateParameterNode(GetType(), "Persist successful rows and skip failing rows", SkipFailingRows.ToString()));
         return document.ToString();
     }
