@@ -207,8 +207,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
     public string UserKeyField { get; set; }
 
-    private static readonly char[] separator = [','];
-
     public override void SaveAsXml(XmlTextWriter xmlTextWriter)
     {
         xmlTextWriter.WriteElementString("RemoveMissingAfterImport", RemoveMissingAfterImport.ToString(CultureInfo.CurrentCulture));
@@ -449,17 +447,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
     public override bool RunJob(Job job)
     {
-        if (!string.IsNullOrEmpty(RepositoriesIndexUpdate))
-        {
-            // if the provider already have RepositoriesIndexUpdate set, then we move them to the job, and set the add-in to string.empty
-            if (job.RepositoriesIndexSettings?.RepositoriesIndexes?.Count == 0)
-            {
-                job.RepositoriesIndexSettings = new RepositoriesIndexSettings(new Collection<string>([.. RepositoriesIndexUpdate.Split(separator, StringSplitOptions.RemoveEmptyEntries)]));
-            }
-            RepositoriesIndexUpdate = string.Empty;
-            job.Save();
-        }
-
         if (IsFirstJobRun)
         {
             OrderTablesByConstraints(job, Connection);
@@ -619,6 +606,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
             sqlTransaction.Commit();
             AssortmentHandler?.RebuildAssortments();
+            MoveRepositoriesIndexToJob(job);
         }
         catch (Exception ex)
         {
@@ -665,6 +653,21 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
             IsFirstJobRun = false;
         }
         return true;
+    }
+
+    private void MoveRepositoriesIndexToJob(Job job)
+    {
+        if (!string.IsNullOrEmpty(RepositoriesIndexUpdate))
+        {
+            char[] separator = [','];
+            // if the provider already have RepositoriesIndexUpdate set, then we move them to the job, and set the add-in to string.empty
+            if (job.RepositoriesIndexSettings?.RepositoriesIndexes?.Count == 0)
+            {
+                job.RepositoriesIndexSettings = new RepositoriesIndexSettings(new Collection<string>([.. RepositoriesIndexUpdate.Split(separator, StringSplitOptions.RemoveEmptyEntries)]));
+            }
+            RepositoriesIndexUpdate = string.Empty;
+            job.Save();
+        }
     }
 
     //Fix for making Products Inactive when checkbox Deactivate Missing Products is on(deleting EcomGroupProductRelation table should be after EcomProducts table)
