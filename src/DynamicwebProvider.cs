@@ -510,7 +510,8 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                         while (!reader.IsDone())
                         {
                             sourceRow = reader.GetNext();
-                            ProcessInputRow(mapping, sourceRow);
+                            if(!ProcessInputRow(sourceRow, mapping))
+                                continue;
                             writer.Write(sourceRow);
                         }
                         writer.FinishWriting();
