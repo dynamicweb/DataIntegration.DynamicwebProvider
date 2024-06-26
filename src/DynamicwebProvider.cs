@@ -585,7 +585,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
                 if (!deleteIncomingItems && writer.RowsToWriteCount > 0)
                 {
-                    writer.RowsAffected += (int)writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
+                    writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
                 }
             }
 

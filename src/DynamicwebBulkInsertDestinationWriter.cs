@@ -284,31 +284,38 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
     internal int MoveDataToMainTable(SqlTransaction sqlTransaction, bool updateOnlyExistingRecords, bool insertOnlyNewRecords) =>
         MoveDataToMainTable(Mapping, SqlCommand, sqlTransaction, tempTablePrefix, updateOnlyExistingRecords, insertOnlyNewRecords);
 
-    internal long DeleteExcessFromMainTable(string shop, SqlTransaction transaction, bool deleteProductsAndGroupForSpecificLanguage, string languageId, bool hideDeactivatedProducts)
+    internal void DeleteExcessFromMainTable(string shop, SqlTransaction transaction, bool deleteProductsAndGroupForSpecificLanguage, string languageId, bool hideDeactivatedProducts)
     {
         SqlCommand.Transaction = transaction;
-        long rowsAffected = 0;
         if ((Mapping.DestinationTable.Name == "EcomProducts" || Mapping.DestinationTable.Name == "EcomGroups") && deleteProductsAndGroupForSpecificLanguage)
         {
             string extraConditions = GetDeleteFromSpecificLanguageExtraCondition(Mapping, tempTablePrefix, languageId);
-            rowsAffected = DeleteExcessFromMainTable(SqlCommand, Mapping, extraConditions, tempTablePrefix, false);
+            var rowsAffected = DeleteExcessFromMainTable(SqlCommand, Mapping, extraConditions, tempTablePrefix, false);
             if (rowsAffected > 0)
+            {
                 logger.Log($"The number of deleted rows: {rowsAffected} for the destination {Mapping.DestinationTable.Name} table mapping");
+                RowsAffected += (int)rowsAffected;
+            }
         }
         else if (Mapping.DestinationTable.Name == "EcomProducts" && deactivateMissingProducts)
         {
-            rowsAffected = DeactivateMissingProductsInMainTable(Mapping, SqlCommand, shop, null, hideDeactivatedProducts);
+            var rowsAffected = DeactivateMissingProductsInMainTable(Mapping, SqlCommand, shop, null, hideDeactivatedProducts);
             if (rowsAffected > 0)
+            {
                 logger.Log($"The number of the deactivated product rows: {rowsAffected}");
+                RowsAffected += rowsAffected;
+            }
         }
         else if ((removeMissingAfterImport || removeMissingAfterImportDestinationTablesOnly) && Mapping.DestinationTable.Name != "AccessUser")
         {
             string extraConditions = GetExtraConditions(Mapping, shop, null);
-            rowsAffected = DeleteExcessFromMainTable(SqlCommand, Mapping, extraConditions, tempTablePrefix, removeMissingAfterImportDestinationTablesOnly);
+            var rowsAffected = DeleteExcessFromMainTable(SqlCommand, Mapping, extraConditions, tempTablePrefix, removeMissingAfterImportDestinationTablesOnly);
             if (rowsAffected > 0)
+            {
                 logger.Log($"The number of deleted rows: {rowsAffected} for the destination {Mapping.DestinationTable.Name} table mapping");
+                RowsAffected += (int)rowsAffected;
+            }
         }
-        return rowsAffected;
     }
 
     internal int DeleteExistingFromMainTable(string shop, SqlTransaction transaction)
