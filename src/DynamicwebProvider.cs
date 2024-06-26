@@ -510,8 +510,10 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                         while (!reader.IsDone())
                         {
                             sourceRow = reader.GetNext();
-                            ProcessInputRow(mapping, sourceRow);
-                            writer.Write(sourceRow);
+                            if (ProcessInputRow(sourceRow, mapping))
+                            {
+                                writer.Write(sourceRow);
+                            }
                         }
                         writer.FinishWriting();
                         writer.ClearTableToWrite();
@@ -546,7 +548,10 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                     {
                         int rowsAffected = writer.DeleteExistingFromMainTable(Shop, sqlTransaction);
                         if (rowsAffected > 0)
+                        {
                             Logger.Log($"The number of deleted rows: {rowsAffected} for the destination {writer.Mapping.DestinationTable.Name} table mapping");
+                            writer.RowsAffected += rowsAffected;
+                        }
                     }
                     else
                     {
@@ -558,7 +563,10 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
                         int rowsAffected = writer.MoveDataToMainTable(sqlTransaction, updateOnlyExistingRecords, InsertOnlyNewRecords);
                         if (rowsAffected > 0)
+                        {
                             Logger.Log($"The number of rows affected: {rowsAffected} in the {writer.Mapping.DestinationTable.Name} table");
+                            writer.RowsAffected += rowsAffected;
+                        }
                     }
                 }
                 else
@@ -577,7 +585,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
                 if (!deleteIncomingItems && writer.RowsToWriteCount > 0)
                 {
-                    writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
+                    writer.RowsAffected += (int)writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
                 }
             }
 
