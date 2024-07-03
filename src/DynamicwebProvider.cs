@@ -550,7 +550,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                         if (rowsAffected > 0)
                         {
                             Logger.Log($"The number of deleted rows: {rowsAffected} for the destination {writer.Mapping.DestinationTable.Name} table mapping");
-                            writer.RowsAffected += rowsAffected;
                         }
                     }
                     else
@@ -565,7 +564,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                         if (rowsAffected > 0)
                         {
                             Logger.Log($"The number of rows affected: {rowsAffected} in the {writer.Mapping.DestinationTable.Name} table");
-                            writer.RowsAffected += rowsAffected;
                         }
                     }
                 }
@@ -576,6 +574,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                         Logger.Log(string.Format("No rows were imported to the table: {0}.", writer.Mapping.DestinationTable.Name));
                     }
                 }
+                TotalRowsAffected += writer.RowsAffected;
             }
 
             foreach (DynamicwebBulkInsertDestinationWriter writer in Enumerable.Reverse(Writers))
@@ -585,7 +584,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
                 if (!deleteIncomingItems && writer.RowsToWriteCount > 0)
                 {
-                    writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
+                    TotalRowsAffected += writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
                 }
             }
 
@@ -599,7 +598,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                     bool deleteIncomingItems = optionValue.HasValue ? optionValue.Value : DeleteIncomingItems;
                     if (!deleteIncomingItems)
                     {
-                        groupProductRelationWriter.DeleteExcessGroupProductsRelationsTable();
+                        TotalRowsAffected += groupProductRelationWriter.DeleteExcessGroupProductsRelationsTable();
                     }
                 }
             }
@@ -635,6 +634,8 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
             if (sqlTransaction != null)
                 sqlTransaction.Rollback();
+
+            TotalRowsAffected = 0;
 
             return false;
         }
