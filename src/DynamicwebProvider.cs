@@ -550,6 +550,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                         if (rowsAffected > 0)
                         {
                             Logger.Log($"The number of deleted rows: {rowsAffected} for the destination {writer.Mapping.DestinationTable.Name} table mapping");
+                            TotalRowsAffected += rowsAffected;
                         }
                     }
                     else
@@ -564,6 +565,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                         if (rowsAffected > 0)
                         {
                             Logger.Log($"The number of rows affected: {rowsAffected} in the {writer.Mapping.DestinationTable.Name} table");
+                            TotalRowsAffected += rowsAffected;
                         }
                     }
                 }
@@ -574,7 +576,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                         Logger.Log(string.Format("No rows were imported to the table: {0}.", writer.Mapping.DestinationTable.Name));
                     }
                 }
-                TotalRowsAffected += writer.RowsAffected;
             }
 
             foreach (DynamicwebBulkInsertDestinationWriter writer in Enumerable.Reverse(Writers))
