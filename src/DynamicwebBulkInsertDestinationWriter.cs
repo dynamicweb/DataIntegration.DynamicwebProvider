@@ -182,7 +182,7 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
                     List<string> userIDs = new List<string>();
                     if (columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber") != null &&
                         columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber").Active &&
-                        row[columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber").SourceColumn.Name] != System.DBNull.Value)
+                        row[columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber").SourceColumn.Name] != DBNull.Value)
                     {
                         string userNumber = (string)row[columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber").SourceColumn.Name];
                         if (!string.IsNullOrEmpty(userNumber))
@@ -191,7 +191,7 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
                         }
                     }
                     var externalIdmapping = columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionExternalID");
-                    if (externalIdmapping != null && externalIdmapping.Active && row[externalIdmapping.SourceColumn.Name] != System.DBNull.Value)
+                    if (externalIdmapping != null && externalIdmapping.Active && row[externalIdmapping.SourceColumn.Name] != DBNull.Value)
                     {
                         string externalId = (string)row[externalIdmapping.SourceColumn.Name];
                         if (!string.IsNullOrEmpty(externalId))
@@ -239,7 +239,7 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
             }
             else
             {
-                logger.Info(BaseDestinationWriter.GetRowValueNotFoundMessage(row, columnMapping.SourceColumn.Table.Name, columnMapping.SourceColumn.Name));
+                logger.Info(GetRowValueNotFoundMessage(row, columnMapping.SourceColumn.Table.Name, columnMapping.SourceColumn.Name));
             }
         }
         if (!discardDuplicates || !duplicateRowsHandler.IsRowDuplicate(activeColumnMappings, Mapping, dataRow, row))
@@ -284,29 +284,40 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
     internal int MoveDataToMainTable(SqlTransaction sqlTransaction, bool updateOnlyExistingRecords, bool insertOnlyNewRecords) =>
         MoveDataToMainTable(Mapping, SqlCommand, sqlTransaction, tempTablePrefix, updateOnlyExistingRecords, insertOnlyNewRecords);
 
-    internal void DeleteExcessFromMainTable(string shop, SqlTransaction transaction, bool deleteProductsAndGroupForSpecificLanguage, string languageId, bool hideDeactivatedProducts)
+    internal int DeleteExcessFromMainTable(string shop, SqlTransaction transaction, bool deleteProductsAndGroupForSpecificLanguage, string languageId, bool hideDeactivatedProducts)
     {
         SqlCommand.Transaction = transaction;
+        int result = 0;
         if ((Mapping.DestinationTable.Name == "EcomProducts" || Mapping.DestinationTable.Name == "EcomGroups") && deleteProductsAndGroupForSpecificLanguage)
         {
             string extraConditions = GetDeleteFromSpecificLanguageExtraCondition(Mapping, tempTablePrefix, languageId);
             var rowsAffected = DeleteExcessFromMainTable(SqlCommand, Mapping, extraConditions, tempTablePrefix, false);
             if (rowsAffected > 0)
+            {
                 logger.Log($"The number of deleted rows: {rowsAffected} for the destination {Mapping.DestinationTable.Name} table mapping");
+                result = (int)rowsAffected;
+            }
         }
         else if (Mapping.DestinationTable.Name == "EcomProducts" && deactivateMissingProducts)
         {
             var rowsAffected = DeactivateMissingProductsInMainTable(Mapping, SqlCommand, shop, null, hideDeactivatedProducts);
             if (rowsAffected > 0)
+            {
                 logger.Log($"The number of the deactivated product rows: {rowsAffected}");
+                result = rowsAffected;
+            }
         }
         else if ((removeMissingAfterImport || removeMissingAfterImportDestinationTablesOnly) && Mapping.DestinationTable.Name != "AccessUser")
         {
             string extraConditions = GetExtraConditions(Mapping, shop, null);
             var rowsAffected = DeleteExcessFromMainTable(SqlCommand, Mapping, extraConditions, tempTablePrefix, removeMissingAfterImportDestinationTablesOnly);
             if (rowsAffected > 0)
+            {
                 logger.Log($"The number of deleted rows: {rowsAffected} for the destination {Mapping.DestinationTable.Name} table mapping");
+                result = (int)rowsAffected;
+            }
         }
+        return result;
     }
 
     internal int DeleteExistingFromMainTable(string shop, SqlTransaction transaction)
@@ -370,10 +381,10 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
     /// This method is called when "PartialUpdate" field settings is set to "true" in the job xml file in the config section.
     /// This method should never be called, unless you're absolutely sure it does what you need.
     /// </summary>        
-    internal void DeleteExcessGroupProductsRelationsTable()
+    internal int DeleteExcessGroupProductsRelationsTable()
     {
         SqlCommand.CommandText = "delete EcomGroupProductRelation from EcomProducts" + tempTablePrefix + " join ecomgroupproductrelation on EcomProducts" + tempTablePrefix + ".productid=ecomgroupproductrelation.GroupProductRelationProductID where not exists (select * from [dbo].[EcomGroupProductRelation" + tempTablePrefix + "] where [dbo].[EcomGroupProductRelation].[GroupProductRelationProductID]=[GroupProductRelationProductID] and [dbo].[EcomGroupProductRelation].[GroupProductRelationGroupID]=[GroupProductRelationGroupID] )";
-        SqlCommand.ExecuteNonQuery();
+        return SqlCommand.ExecuteNonQuery();
     }
 
     internal void AddMappingsToJobThatNeedsToBeThereForMoveToMainTables(Job job)

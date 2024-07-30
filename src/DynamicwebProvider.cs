@@ -510,8 +510,10 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                         while (!reader.IsDone())
                         {
                             sourceRow = reader.GetNext();
-                            ProcessInputRow(mapping, sourceRow);
-                            writer.Write(sourceRow);
+                            if (ProcessInputRow(sourceRow, mapping))
+                            {
+                                writer.Write(sourceRow);
+                            }
                         }
                         writer.FinishWriting();
                         writer.ClearTableToWrite();
@@ -546,7 +548,10 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                     {
                         int rowsAffected = writer.DeleteExistingFromMainTable(Shop, sqlTransaction);
                         if (rowsAffected > 0)
+                        {
                             Logger.Log($"The number of deleted rows: {rowsAffected} for the destination {writer.Mapping.DestinationTable.Name} table mapping");
+                            TotalRowsAffected += rowsAffected;
+                        }
                     }
                     else
                     {
@@ -558,7 +563,10 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
                         int rowsAffected = writer.MoveDataToMainTable(sqlTransaction, updateOnlyExistingRecords, InsertOnlyNewRecords);
                         if (rowsAffected > 0)
+                        {
                             Logger.Log($"The number of rows affected: {rowsAffected} in the {writer.Mapping.DestinationTable.Name} table");
+                            TotalRowsAffected += rowsAffected;
+                        }
                     }
                 }
                 else
@@ -577,7 +585,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
                 if (!deleteIncomingItems && writer.RowsToWriteCount > 0)
                 {
-                    writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
+                    TotalRowsAffected += writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
                 }
             }
 
@@ -591,7 +599,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                     bool deleteIncomingItems = optionValue.HasValue ? optionValue.Value : DeleteIncomingItems;
                     if (!deleteIncomingItems)
                     {
-                        groupProductRelationWriter.DeleteExcessGroupProductsRelationsTable();
+                        TotalRowsAffected += groupProductRelationWriter.DeleteExcessGroupProductsRelationsTable();
                     }
                 }
             }
@@ -627,6 +635,8 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
             if (sqlTransaction != null)
                 sqlTransaction.Rollback();
+
+            TotalRowsAffected = 0;
 
             return false;
         }
