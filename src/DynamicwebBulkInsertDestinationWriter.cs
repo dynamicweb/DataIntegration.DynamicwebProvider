@@ -1,4 +1,5 @@
-﻿using Dynamicweb.DataIntegration.Integration;
+﻿using Dynamicweb.Core;
+using Dynamicweb.DataIntegration.Integration;
 using Dynamicweb.DataIntegration.Integration.Interfaces;
 using Dynamicweb.DataIntegration.ProviderHelpers;
 using Dynamicweb.Logging;
@@ -174,48 +175,48 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
         switch (Mapping.DestinationTable.Name)
         {
             case "EcomAssortmentPermissions":
-                if (columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "AssortmentPermissionAssortmentID", true) == 0) != null &&
-                    row[columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "AssortmentPermissionAssortmentID", true) == 0).SourceColumn.Name] != DBNull.Value &&
-                    !string.IsNullOrEmpty(row[columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "AssortmentPermissionAssortmentID", true) == 0).SourceColumn.Name] as string))
+                if (columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "AssortmentPermissionAssortmentID", true) == 0) != null)
                 {
-                    string assortmentID = (string)row[columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "AssortmentPermissionAssortmentID", true) == 0).SourceColumn.Name];
-                    List<string> userIDs = new List<string>();
-                    if (columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber") != null &&
-                        columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber").Active &&
-                        row[columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber").SourceColumn.Name] != DBNull.Value)
+                    string assortmentID = GetValue(columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "AssortmentPermissionAssortmentID", true) == 0), row);
+                    if (!string.IsNullOrEmpty(assortmentID))
                     {
-                        string userNumber = (string)row[columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber").SourceColumn.Name];
-                        if (!string.IsNullOrEmpty(userNumber))
+                        List<string> userIDs = new List<string>();
+                        if (columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber") != null &&
+                            columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber").Active)
                         {
-                            userIDs = ExistingUsers.Select("AccessUserCustomerNumber='" + userNumber.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()).ToList();
+                            string userNumber = GetValue(columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionCustomerNumber"), row);
+                            if (!string.IsNullOrEmpty(userNumber))
+                            {
+                                userIDs = ExistingUsers.Select("AccessUserCustomerNumber='" + userNumber.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()).ToList();
+                            }
                         }
-                    }
-                    var externalIdmapping = columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionExternalID");
-                    if (externalIdmapping != null && externalIdmapping.Active && row[externalIdmapping.SourceColumn.Name] != DBNull.Value)
-                    {
-                        string externalId = (string)row[externalIdmapping.SourceColumn.Name];
-                        if (!string.IsNullOrEmpty(externalId))
+                        var externalIdmapping = columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionExternalID");
+                        if (externalIdmapping != null && externalIdmapping.Active)
                         {
-                            userIDs.AddRange(ExistingUsers.Select("AccessUserExternalID='" + externalId.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()));
+                            string externalId = GetValue(externalIdmapping, row);
+                            if (!string.IsNullOrEmpty(externalId))
+                            {
+                                userIDs.AddRange(ExistingUsers.Select("AccessUserExternalID='" + externalId.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()));
+                            }
                         }
-                    }
-                    var userIdMapping = columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionAccessUserID");
-                    if (userIdMapping != null && userIdMapping.Active && row[userIdMapping.SourceColumn.Name] != DBNull.Value)
-                    {
-                        string id = (string)row[userIdMapping.SourceColumn.Name];
-                        if (!string.IsNullOrEmpty(id))
+                        var userIdMapping = columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionAccessUserID");
+                        if (userIdMapping != null && userIdMapping.Active)
                         {
-                            userIDs.AddRange(ExistingUsers.Select("AccessUserID='" + id.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()));
+                            string id = GetValue(userIdMapping, row);
+                            if (!string.IsNullOrEmpty(id))
+                            {
+                                userIDs.AddRange(ExistingUsers.Select("AccessUserID='" + id.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()));
+                            }
                         }
+                        foreach (string userID in userIDs.Distinct())
+                        {
+                            DataRow relation = TableToWrite.NewRow();
+                            relation["AssortmentPermissionAssortmentID"] = assortmentID;
+                            relation["AssortmentPermissionAccessUserID"] = userID;
+                            TableToWrite.Rows.Add(relation);
+                        }
+                        return;
                     }
-                    foreach (string userID in userIDs.Distinct())
-                    {
-                        DataRow relation = TableToWrite.NewRow();
-                        relation["AssortmentPermissionAssortmentID"] = assortmentID;
-                        relation["AssortmentPermissionAccessUserID"] = userID;
-                        TableToWrite.Rows.Add(relation);
-                    }
-                    return;
                 }
                 break;
         }
@@ -224,7 +225,7 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
         foreach (ColumnMapping columnMapping in activeColumnMappings)
         {
             object rowValue = null;
-            if (columnMapping.HasScriptWithValue || row.TryGetValue(columnMapping.SourceColumn?.Name, out rowValue))
+            if (columnMapping.HasScriptWithValue || (columnMapping.SourceColumn?.Name is not null && row.TryGetValue(columnMapping.SourceColumn.Name, out rowValue)))
             {
                 object dataToRow = columnMapping.ConvertInputValueToOutputValue(rowValue);
 
@@ -239,16 +240,19 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
             }
             else
             {
-                logger.Info(GetRowValueNotFoundMessage(row, columnMapping.SourceColumn.Table.Name, columnMapping.SourceColumn.Name));
+                logger.Info(GetRowValueNotFoundMessage(row, columnMapping.SourceColumn?.Table?.Name ?? columnMapping.DestinationColumn?.Table?.Name,
+                    columnMapping.SourceColumn?.Name ?? columnMapping.DestinationColumn?.Name));
             }
         }
         if (!discardDuplicates || !duplicateRowsHandler.IsRowDuplicate(activeColumnMappings, Mapping, dataRow, row))
         {
             if (Mapping.DestinationTable.Name == "EcomGroupProductRelation")
             {
-                var groupIDColumn = columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "GroupProductRelationGroupID", true) == 0).SourceColumn.Name;
-                var productIdColumn = columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "GroupProductRelationProductID", true) == 0).SourceColumn.Name;
-                var selectString = "GroupProductRelationGroupID='" + row[groupIDColumn] + "' and GroupProductRelationProductID='" + row[productIdColumn] + "'";
+                var groupIdColumn = columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "GroupProductRelationGroupID", true) == 0);
+                var groupId = GetValue(groupIdColumn, row);
+                var productIdColumn = columnMappings.Find(m => string.Compare(m.DestinationColumn.Name, "GroupProductRelationProductID", true) == 0);
+                var productId = GetValue(productIdColumn, row);
+                var selectString = "GroupProductRelationGroupID='" + groupId + "' and GroupProductRelationProductID='" + productId + "'";
                 var columnExists = TableToWrite.Select(selectString);
                 if (columnExists.Length < 1)
                 {
@@ -433,6 +437,33 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
         {
             duplicateRowsHandler.Dispose();
         }
+    }
+
+    private string GetValue(ColumnMapping columnMapping, Dictionary<string, object> row)
+    {
+        string result = null;
+        if (columnMapping != null && (columnMapping.HasScriptWithValue || row.ContainsKey(columnMapping.SourceColumn.Name)))
+        {
+            switch (columnMapping.ScriptType)
+            {
+                case ScriptType.None:
+                    result = Converter.ToString(row[columnMapping.SourceColumn.Name]);
+                    break;
+                case ScriptType.Append:
+                    result = Converter.ToString(row[columnMapping.SourceColumn.Name]) + columnMapping.ScriptValue;
+                    break;
+                case ScriptType.Prepend:
+                    result = columnMapping.ScriptValue + Converter.ToString(row[columnMapping.SourceColumn.Name]);
+                    break;
+                case ScriptType.Constant:
+                    result = columnMapping.GetScriptValue();
+                    break;
+                case ScriptType.NewGuid:
+                    result = columnMapping.GetScriptValue();
+                    break;
+            }
+        }
+        return result;
     }
 
     #region IDisposable Implementation
