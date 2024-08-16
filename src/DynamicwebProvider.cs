@@ -766,7 +766,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
     public override Schema GetOriginalDestinationSchema()
     {
-        return GetSchema();
+        return GetOriginalSourceSchema();
     }
 
     public IEnumerable<ParameterOption> GetParameterOptions(string parameterName)
