@@ -439,6 +439,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
     private static IEnumerable<ColumnMapping> ReplaceKeyColumnsWithAutoIdIfExists(Mapping mapping)
     {
+        //will move this to MappingExtensions - US https://dev.azure.com/dynamicwebsoftware/Dynamicweb/_workitems/edit/20900
         if (mapping == null) return [];
 
         var autoIdDestinationColumnName = MappingExtensions.GetAutoIdColumnName(mapping.DestinationTable?.Name ?? "");
