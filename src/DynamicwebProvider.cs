@@ -437,24 +437,6 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         Schema = GetOriginalSourceSchema();
     }
 
-    private static IEnumerable<ColumnMapping> ReplaceKeyColumnsWithAutoIdIfExists(Mapping mapping)
-    {
-        //will move this to MappingExtensions - US https://dev.azure.com/dynamicwebsoftware/Dynamicweb/_workitems/edit/20900
-        if (mapping == null) return [];
-
-        var autoIdDestinationColumnName = MappingExtensions.GetAutoIdColumnName(mapping.DestinationTable?.Name ?? "");
-        if (string.IsNullOrEmpty(autoIdDestinationColumnName)) return mapping.GetColumnMappings();
-
-        var columnMappings = mapping.GetColumnMappings().ToList();
-        var autoIdColumnMapping = columnMappings.Where(obj => obj.DestinationColumn.Name.Equals(autoIdDestinationColumnName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-        if (autoIdColumnMapping != null)
-        {
-            columnMappings.ForEach(obj => obj.IsKey = false);
-            autoIdColumnMapping.IsKey = true;
-        }
-        return columnMappings;
-    }
-
     public override bool RunJob(Job job)
     {
         if (IsFirstJobRun)
@@ -475,7 +457,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
             {
                 if (mapping.Active)
                 {
-                    var columnMappings = ReplaceKeyColumnsWithAutoIdIfExists(mapping);
+                    var columnMappings = MappingExtensions.ReplaceKeyColumnsWithAutoIdIfExists(mapping);
                     Logger.Log("Starting import to temporary table for " + mapping.DestinationTable.Name + ".");
                     using (var reader = job.Source.GetReader(mapping))
                     {
