@@ -610,7 +610,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
                 if (!deleteIncomingItems && writer.RowsToWriteCount > 0)
                 {
-                    writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
+                    TotalRowsAffected += writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
                 }
             }
 
@@ -624,7 +624,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                     bool deleteIncomingItems = optionValue.HasValue ? optionValue.Value : DeleteIncomingItems;
                     if (!deleteIncomingItems)
                     {
-                        groupProductRelationWriter.DeleteExcessGroupProductsRelationsTable();
+                        TotalRowsAffected += groupProductRelationWriter.DeleteExcessGroupProductsRelationsTable();
                     }
                 }
             }
