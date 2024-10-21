@@ -1,4 +1,5 @@
-﻿using Dynamicweb.Data;
+﻿using Dynamicweb.Core;
+using Dynamicweb.Data;
 using Dynamicweb.DataIntegration.Integration;
 using Dynamicweb.DataIntegration.Integration.Interfaces;
 using Dynamicweb.DataIntegration.ProviderHelpers;
@@ -18,7 +19,7 @@ using System.Xml.Linq;
 namespace Dynamicweb.DataIntegration.Providers.DynamicwebProvider;
 
 [AddInName("Dynamicweb.DataIntegration.Providers.Provider"), AddInLabel("Dynamicweb Provider"), AddInDescription("Dynamicweb provider"), AddInIgnore(false), AddInUseParameterOrdering(true)]
-public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameterVisibility
+public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameterVisibility, ISource, IDestination
 {
     protected Schema Schema;
     protected bool IsFirstJobRun = true;
@@ -223,8 +224,14 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         xmlTextWriter.WriteElementString("DiscardDuplicates", DiscardDuplicates.ToString(CultureInfo.CurrentCulture));
         xmlTextWriter.WriteElementString("HideDeactivatedProducts", HideDeactivatedProducts.ToString(CultureInfo.CurrentCulture));
         xmlTextWriter.WriteElementString("SkipFailingRows", SkipFailingRows.ToString(CultureInfo.CurrentCulture));
-        GetSchema().SaveAsXml(xmlTextWriter);
+        if (!Feature.IsActive<SchemaManagementFeature>())
+            GetSchema().SaveAsXml(xmlTextWriter);
     }
+
+    string ISource.GetId() => "Source|DynamicwebProvider";
+
+    string IDestination.GetId() => "Destination|DynamicwebProvider";
+
 
     public DynamicwebProvider(XmlNode xmlNode)
     {
