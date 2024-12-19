@@ -759,7 +759,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         root.Add(CreateParameterNode(GetType(), "Deactivate missing products", DeactivateMissingProducts.ToString()));
         root.Add(CreateParameterNode(GetType(), "Update only existing records", UpdateOnlyExistingRecords.ToString()));
         root.Add(CreateParameterNode(GetType(), "Insert only new records", InsertOnlyNewRecords.ToString()));
-        root.Add(CreateParameterNode(GetType(), "Remove missing rows - respect entire table", RemoveMissingRows.ToString()));
+        root.Add(CreateParameterNode(GetType(), "Remove missing rows across all tables after import", RemoveMissingRows.ToString()));
         root.Add(CreateParameterNode(GetType(), "Remove missing rows after import", RemoveMissingAfterImport.ToString()));
         root.Add(CreateParameterNode(GetType(), "Remove missing rows after import in the destination tables only", RemoveMissingAfterImportDestinationTablesOnly.ToString()));
         root.Add(CreateParameterNode(GetType(), "Delete incoming rows", DeleteIncomingItems.ToString()));
