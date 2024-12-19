@@ -175,11 +175,11 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
     [AddInParameter("Remove missing rows after import in the destination tables only"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows not present in the import source - excluding related tabled"), AddInParameterGroup("Destination"), AddInParameterOrder(35)]
     public bool RemoveMissingAfterImportDestinationTablesOnly { get; set; }
 
-    [AddInParameter("Remove missing rows after import"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows not present in the import source - including related tables. This option takes precedence. When Delete incoming rows is ON, this option is ignored"), AddInParameterGroup("Destination"), AddInParameterOrder(40)]
+    [AddInParameter("Remove missing rows after import"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows from each destination table individually, based on whether they are present in the corresponding source table. This setting looks at each table separately and removes rows missing from the source for that specific table. When Delete incoming rows is ON, this option is ignored"), AddInParameterGroup("Destination"), AddInParameterOrder(40)]
     public bool RemoveMissingAfterImport { get; set; }
 
-    [AddInParameter("Remove missing rows - respect entire table")]
-    [AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows not present in the import source")]
+    [AddInParameter("Remove missing rows across all tables after import")]
+    [AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows from all destination tables and relation tables by considering the entire dataset in the import source. This setting evaluates all tables collectively and removes rows missing across the whole activity.")]
     [AddInParameterGroup("Destination"), AddInParameterOrder(45)]
     public bool RemoveMissingRows { get; set; }
 
