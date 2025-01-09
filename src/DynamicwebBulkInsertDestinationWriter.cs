@@ -30,6 +30,11 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
     protected readonly bool SkipFailingRows;
     public SqlCommand SqlCommand;
 
+    internal string GetTempTableName
+    {
+        get => tempTablePrefix;
+    }
+
     public new Mapping Mapping { get; }
 
     private DataTable existingUsers;
@@ -322,6 +327,13 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
             }
         }
         return result;
+    }
+
+    internal int DeleteExcessFromMainTable(string shop, SqlTransaction transaction, Dictionary<string, Mapping> mappings)
+    {
+        SqlCommand.Transaction = transaction;
+        string extraConditions = GetExtraConditions(Mapping, shop, null);
+        return DeleteRowsFromMainTable(false, mappings, extraConditions, SqlCommand);
     }
 
     internal int DeleteExistingFromMainTable(string shop, SqlTransaction transaction)

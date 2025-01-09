@@ -176,8 +176,13 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
     [AddInParameter("Remove missing rows after import in the destination tables only"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows not present in the import source - excluding related tabled"), AddInParameterGroup("Destination"), AddInParameterOrder(35)]
     public bool RemoveMissingAfterImportDestinationTablesOnly { get; set; }
 
-    [AddInParameter("Remove missing rows after import"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows not present in the import source - including related tables. This option takes precedence. When Delete incoming rows is ON, this option is ignored"), AddInParameterGroup("Destination"), AddInParameterOrder(40)]
+    [AddInParameter("Remove missing rows after import"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows from each destination table individually, based on whether they are present in the corresponding source table. This setting looks at each table separately and removes rows missing from the source for that specific table. When Delete incoming rows is ON, this option is ignored"), AddInParameterGroup("Destination"), AddInParameterOrder(40)]
     public bool RemoveMissingAfterImport { get; set; }
+
+    [AddInParameter("Remove missing rows across all tables after import")]
+    [AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes rows from all destination tables and relation tables by considering the entire dataset in the import source. This setting evaluates all tables collectively and removes rows missing across the whole activity.")]
+    [AddInParameterGroup("Destination"), AddInParameterOrder(45)]
+    public bool RemoveMissingRows { get; set; }
 
     [AddInParameter("Delete incoming rows"), AddInParameterEditor(typeof(YesNoParameterEditor), "Tooltip=Deletes existing rows present in the import source. When Delete incoming rows is ON, the following options are skipped: Update only existing records, Deactivate missing products, Remove missing rows after import, Delete products / groups for languages included in input, Hide deactivated products"), AddInParameterGroup("Destination"), AddInParameterOrder(50)]
     public bool DeleteIncomingItems { get; set; }
@@ -210,6 +215,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
 
     public override void SaveAsXml(XmlTextWriter xmlTextWriter)
     {
+        xmlTextWriter.WriteElementString("RemoveMissingRows", RemoveMissingRows.ToString(CultureInfo.CurrentCulture));
         xmlTextWriter.WriteElementString("RemoveMissingAfterImport", RemoveMissingAfterImport.ToString(CultureInfo.CurrentCulture));
         xmlTextWriter.WriteElementString("RemoveMissingAfterImportDestinationTablesOnly", RemoveMissingAfterImportDestinationTablesOnly.ToString(CultureInfo.CurrentCulture));
         xmlTextWriter.WriteElementString("DeactivateMissingProducts", DeactivateMissingProducts.ToString(CultureInfo.CurrentCulture));
@@ -256,6 +262,12 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                     break;
                 case "Schema":
                     Schema = new Schema(node);
+                    break;
+                case "RemoveMissingRows":
+                    if (node.HasChildNodes)
+                    {
+                        RemoveMissingRows = node.FirstChild.Value == "True";
+                    }
                     break;
                 case "RemoveMissingAfterImport":
                     if (node.HasChildNodes)
@@ -383,6 +395,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         DiscardDuplicates = newProvider.DiscardDuplicates;
         HideDeactivatedProducts = newProvider.HideDeactivatedProducts;
         SkipFailingRows = newProvider.SkipFailingRows;
+        RemoveMissingRows = newProvider.RemoveMissingRows;
     }
 
     public override Schema GetOriginalSourceSchema()
@@ -585,14 +598,39 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                 }
             }
 
-            foreach (DynamicwebBulkInsertDestinationWriter writer in Enumerable.Reverse(Writers))
+            if (RemoveMissingRows)
             {
-                bool? optionValue = writer.Mapping.GetOptionValue("DeleteIncomingItems");
-                bool deleteIncomingItems = optionValue.HasValue ? optionValue.Value : DeleteIncomingItems;
-
-                if (!deleteIncomingItems && writer.RowsToWriteCount > 0)
+                var distinctWriters = Enumerable.Reverse(Writers).DistinctBy(obj => obj.Mapping.DestinationTable);
+                if (distinctWriters != null)
                 {
-                    TotalRowsAffected += writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
+                    foreach (var distinctWriter in distinctWriters)
+                    {
+                        if (distinctWriter == null || distinctWriter.Mapping == null)
+                            continue;
+
+                        var sameWriters = Writers.Where(obj => obj.Mapping != null && obj.Mapping.DestinationTable != null && obj.Mapping.DestinationTable.Name.Equals(distinctWriter.Mapping.DestinationTable?.Name ?? "", StringComparison.OrdinalIgnoreCase)).ToList();
+                        if (sameWriters.Count == 0)
+                            continue;
+
+                        Dictionary<string, Mapping> mappings = sameWriters.ToDictionary(obj => $"{obj.GetTempTableName}", obj => obj.Mapping);
+                        if (mappings == null || mappings.Count == 0)
+                            continue;
+
+                        TotalRowsAffected += sameWriters[0].DeleteExcessFromMainTable(Shop, sqlTransaction, mappings);
+                    }
+                }
+            }
+            else
+            {
+                foreach (DynamicwebBulkInsertDestinationWriter writer in Enumerable.Reverse(Writers))
+                {
+                    bool? optionValue = writer.Mapping.GetOptionValue("DeleteIncomingItems");
+                    bool deleteIncomingItems = optionValue.HasValue ? optionValue.Value : DeleteIncomingItems;
+
+                    if (!deleteIncomingItems && writer.RowsToWriteCount > 0)
+                    {
+                        TotalRowsAffected += writer.DeleteExcessFromMainTable(Shop, sqlTransaction, DeleteProductsAndGroupForSpecificLanguage, defaultLanguage, HideDeactivatedProducts);
+                    }
                 }
             }
 
@@ -710,6 +748,7 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         root.Add(CreateParameterNode(GetType(), "Deactivate missing products", DeactivateMissingProducts.ToString()));
         root.Add(CreateParameterNode(GetType(), "Update only existing records", UpdateOnlyExistingRecords.ToString()));
         root.Add(CreateParameterNode(GetType(), "Insert only new records", InsertOnlyNewRecords.ToString()));
+        root.Add(CreateParameterNode(GetType(), "Remove missing rows across all tables after import", RemoveMissingRows.ToString()));
         root.Add(CreateParameterNode(GetType(), "Remove missing rows after import", RemoveMissingAfterImport.ToString()));
         root.Add(CreateParameterNode(GetType(), "Remove missing rows after import in the destination tables only", RemoveMissingAfterImportDestinationTablesOnly.ToString()));
         root.Add(CreateParameterNode(GetType(), "Delete incoming rows", DeleteIncomingItems.ToString()));
