@@ -193,6 +193,7 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
                             if (!string.IsNullOrEmpty(userNumber))
                             {
                                 userIDs = ExistingUsers.Select("AccessUserCustomerNumber='" + userNumber.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()).ToList();
+                                dataRow["AssortmentPermissionCustomerNumber"] = userNumber;
                             }
                         }
                         var externalIdmapping = columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionExternalID");
@@ -202,6 +203,7 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
                             if (!string.IsNullOrEmpty(externalId))
                             {
                                 userIDs.AddRange(ExistingUsers.Select("AccessUserExternalID='" + externalId.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()));
+                                dataRow["AssortmentPermissionExternalID"] = externalId;
                             }
                         }
                         var userIdMapping = columnMappings.Find(cm => cm.DestinationColumn.Name == "AssortmentPermissionAccessUserID");
@@ -211,7 +213,13 @@ public class DynamicwebBulkInsertDestinationWriter : BaseSqlWriter, IDestination
                             if (!string.IsNullOrEmpty(id))
                             {
                                 userIDs.AddRange(ExistingUsers.Select("AccessUserID='" + id.Replace("'", "''") + "'").Select(r => r["AccessUserID"].ToString()));
+                                dataRow["AssortmentPermissionAccessUserID"] = id;
                             }
+                        }
+                        dataRow["AssortmentPermissionAssortmentID"] = assortmentID;
+                        if (discardDuplicates && duplicateRowsHandler.IsRowDuplicate(columnMappings.Where(cm => cm.Active), Mapping, dataRow, row))
+                        {
+                            return;
                         }
                         foreach (string userID in userIDs.Distinct())
                         {

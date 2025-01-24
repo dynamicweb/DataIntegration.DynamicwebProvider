@@ -435,8 +435,8 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
         Table ecomAssortmentPermissionsTable = result.GetTables().Find(t => t.Name == "EcomAssortmentPermissions");
         if (ecomAssortmentPermissionsTable != null)
         {
-            ecomAssortmentPermissionsTable.AddColumn(new SqlColumn(("AssortmentPermissionCustomerNumber"), typeof(string), SqlDbType.NVarChar, ecomAssortmentPermissionsTable, -1, false, false, true));
-            ecomAssortmentPermissionsTable.AddColumn(new SqlColumn(("AssortmentPermissionExternalID"), typeof(string), SqlDbType.NVarChar, ecomAssortmentPermissionsTable, -1, false, false, true));
+            ecomAssortmentPermissionsTable.AddColumn(new SqlColumn(("AssortmentPermissionCustomerNumber"), typeof(string), SqlDbType.NVarChar, ecomAssortmentPermissionsTable, -1, false, true, true));
+            ecomAssortmentPermissionsTable.AddColumn(new SqlColumn(("AssortmentPermissionExternalID"), typeof(string), SqlDbType.NVarChar, ecomAssortmentPermissionsTable, -1, false, true, true));
         }
         return result;
     }
