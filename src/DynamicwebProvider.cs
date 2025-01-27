@@ -2,6 +2,7 @@
 using Dynamicweb.Data;
 using Dynamicweb.DataIntegration.Integration;
 using Dynamicweb.DataIntegration.Integration.Interfaces;
+using Dynamicweb.DataIntegration.Integration.ScriptTypes;
 using Dynamicweb.DataIntegration.ProviderHelpers;
 using Dynamicweb.Extensibility.AddIns;
 using Dynamicweb.Extensibility.Editors;
@@ -498,8 +499,10 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                                 {
                                     Column randomColumn = mapping.SourceTable.Columns.First();
                                     var languageColumnMapping = mapping.AddMapping(randomColumn, mapping.DestinationTable.Columns.Find(c => string.Compare(c.Name, MappingExtensions.GetLanguageIdColumnName(mapping.DestinationTable.Name), true) == 0));
-                                    languageColumnMapping.ScriptType = ScriptType.Constant;
-                                    languageColumnMapping.ScriptValue = defaultLanguage;
+                                    languageColumnMapping.ScriptTypeProvider = new ConstantScriptType() 
+                                    { 
+                                        ScriptValue = defaultLanguage 
+                                    };
                                 }
                             }
 
@@ -510,8 +513,10 @@ public class DynamicwebProvider : BaseSqlProvider, IParameterOptions, IParameter
                                 {
                                     Column randomColumn = mapping.SourceTable.Columns.First();
                                     var shopColumnMapping = mapping.AddMapping(randomColumn, mapping.DestinationTable.Columns.Find(c => string.Compare(c.Name, MappingExtensions.GetShopIdColumnName(mapping.DestinationTable.Name), true) == 0));
-                                    shopColumnMapping.ScriptType = ScriptType.Constant;
-                                    shopColumnMapping.ScriptValue = Shop;
+                                    shopColumnMapping.ScriptTypeProvider = new ConstantScriptType()
+                                    {
+                                        ScriptValue = Shop
+                                    };
                                 }
                             }
 
